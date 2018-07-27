@@ -1,0 +1,65 @@
+---
+tasks:
+  bootstrap:
+    usage: Set up dependencies for first time use
+    description: |
+      Install all dependencies for building and testing the library.
+    run:
+      - go get -u github.com/golang/dep/cmd/dep
+      - dep ensure
+      - go get -u gopkg.in/alecthomas/gometalinter.v2
+      - gometalinter.v2 --install
+
+  lint:
+    usage: Run gometalinter for static analysis
+    description: |
+      Runs gometalinter using the configuration specified in .gometalinter.json.
+    options:
+      fast:
+        usage: Only run fast linters
+        type: bool
+      opts:
+        private: true
+        default:
+          when:
+            equal: {fast: true}
+          value: --fast
+    run: gometalinter.v2 ${opts} ./...
+
+  test:
+    usage: Run go test and gometalinter
+    description: |
+      Runs the full test suite using `go test -cover -race ./...`.
+    options:
+      all:
+        usage: Run all tests and linters
+        short: a
+        type: bool
+      fast:
+        usage: Only run fast tests
+        short: f
+        type: bool
+      verbose:
+        usage: Run the tests in verbose mode
+        short: v
+        type: bool
+      verbose-string:
+        private: true
+        default:
+          when:
+            equal: {verbose: true}
+          value: -v
+      short-string:
+        private: true
+        default:
+          when:
+            equal: {fast: true}
+          value: -short
+    run:
+      - when:
+          equal: {all: true}
+        task:
+          name: lint
+          options:
+            fast: ${fast}
+      - command: go test -cover -race ${verbose-string} ${short-string} ./...
