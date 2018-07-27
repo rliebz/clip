@@ -1,0 +1,7 @@
+[[constraint]]
+  name = "gotest.tools"
+  version = "2.1.0"
+
+[prune]
+  go-tests = true
+  unused-packages = true
