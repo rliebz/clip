@@ -22,6 +22,9 @@
     "vet",
     "vetshadow"
   ],
+  "exclude": [
+    "which can be annoying to use"
+  ],
   "linelength": 120,
   "test": true,
   "vendor": true
