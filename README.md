@@ -32,7 +32,7 @@ Of course, this doesn't actually do anything interesting. To create a command:
 hello := clip.NewCommand(
   "hello",
   clip.WithDescription("Greet the world"),
-  clip.WithAction(func(cmd *clip.Command) error {
+  clip.WithAction(func(ctx *clip.Context) error {
     fmt.Println("Hello, world!")
     return nil
   }),
@@ -67,9 +67,9 @@ hello := clip.NewCommand(
       clip.WithArgValues([]string{"Alice", "Bruce", "Carl"}),
     ),
   ),
-  clip.WithAction(func(cmd *clip.Command) error {
-    greeting := fmt.Sprintf("Hello, %s\n", cmd.Args[0])
-    if cmd.Flags["loud"] {
+  clip.WithAction(func(ctx *clip.Context) error {
+    greeting := fmt.Sprintf("Hello, %s\n", ctx.Args[0])
+    if ctx.Flags["loud"] {
       greeting = strings.ToUpper(greeting)
     }
     fmt.Println(greeting)

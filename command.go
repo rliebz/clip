@@ -7,11 +7,15 @@ type Command struct {
 	// Command definition
 	name        string
 	description string
-	action      func(*Command) error
+	action      func(*Context) error
 	writer      io.Writer
+}
 
-	// Runtime metadata
-	args []string
+// Context is a command context with runtime metadata.
+type Context struct {
+	*Command
+
+	Args []string
 }
 
 // Name is the name of the command.
@@ -22,12 +26,10 @@ func (cmd *Command) Description() string { return cmd.description }
 
 // Run runs a command using a given set of args.
 func (cmd *Command) Run(args []string) error {
-	cmd.args = args
+	ctx := Context{
+		Command: cmd,
+		Args:    args,
+	}
 
-	return cmd.action(cmd)
-}
-
-// Args returns a list of arguments passed to the command when run.
-func (cmd *Command) Args() []string {
-	return cmd.args
+	return cmd.action(&ctx)
 }

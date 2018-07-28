@@ -24,7 +24,7 @@ func NewCommand(name string, options ...commandOption) *Command {
 }
 
 // WithAction sets a Command's behavior when invoked.
-func WithAction(action func(*Command) error) commandOption {
+func WithAction(action func(*Context) error) commandOption {
 	return func(cmd *Command) {
 		cmd.action = action
 	}

@@ -29,7 +29,7 @@ func TestCommandRunHelp(t *testing.T) {
 
 func TestCommandAction(t *testing.T) {
 	wasCalled := false
-	action := func(cmd *Command) error {
+	action := func(ctx *Context) error {
 		wasCalled = true
 		return nil
 	}
@@ -48,9 +48,9 @@ func TestCommandArgs(t *testing.T) {
 	args := []string{"a", "b", "c"}
 
 	wasCalled := false
-	action := func(cmd *Command) error {
+	action := func(ctx *Context) error {
 		wasCalled = true
-		assert.DeepEqual(t, cmd.Args(), args)
+		assert.DeepEqual(t, ctx.Args, args)
 		return nil
 	}
 

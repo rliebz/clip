@@ -6,7 +6,7 @@ import (
 
 const helpTemplateString = `{{.Name}} - {{.Description}}`
 
-func printCommandHelp(cmd *Command) error {
+func printCommandHelp(ctx *Context) error {
 	t := template.Must(template.New("help").Parse(helpTemplateString))
-	return t.Execute(cmd.writer, cmd)
+	return t.Execute(ctx.writer, ctx)
 }
