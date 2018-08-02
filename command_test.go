@@ -15,19 +15,22 @@ func TestCommandName(t *testing.T) {
 }
 
 func TestCommandRunHelp(t *testing.T) {
+	cmdName := "foo"
 	output := new(bytes.Buffer)
 	command := NewCommand(
-		"foo",
+		cmdName,
 		WithDescription("some description"),
 		WithWriter(output),
 	)
-	assert.NilError(t, command.Run([]string{}))
+	assert.NilError(t, command.Run([]string{cmdName}))
 	helpText := output.String()
 	assert.Check(t, cmp.Contains(helpText, command.Name()))
 	assert.Check(t, cmp.Contains(helpText, command.Description()))
 }
 
 func TestCommandAction(t *testing.T) {
+	cmdName := "foo"
+
 	wasCalled := false
 	action := func(ctx *Context) error {
 		wasCalled = true
@@ -35,16 +38,17 @@ func TestCommandAction(t *testing.T) {
 	}
 
 	command := NewCommand(
-		"foo",
+		cmdName,
 		WithAction(action),
 	)
 
 	assert.Check(t, !wasCalled)
-	assert.NilError(t, command.Run([]string{}))
+	assert.NilError(t, command.Run([]string{cmdName}))
 	assert.Check(t, wasCalled)
 }
 
 func TestCommandArgs(t *testing.T) {
+	cmdName := "foo"
 	args := []string{"a", "b", "c"}
 
 	wasCalled := false
@@ -55,11 +59,12 @@ func TestCommandArgs(t *testing.T) {
 	}
 
 	command := NewCommand(
-		"foo",
+		cmdName,
 		WithAction(action),
 	)
 
-	assert.NilError(t, command.Run(args))
+	cliArgs := append([]string{cmdName}, args...)
+	assert.NilError(t, command.Run(cliArgs))
 	assert.Assert(t, wasCalled)
 }
 
@@ -94,8 +99,8 @@ func TestSubCommandArgs(t *testing.T) {
 		WithCommand(subCommand),
 	)
 
-	allArgs := append([]string{subCmdName}, args...)
-	assert.NilError(t, command.Run(allArgs))
+	cliArgs := append([]string{cmdName, subCmdName}, args...)
+	assert.NilError(t, command.Run(cliArgs))
 }
 
 func TestSubCommandDuplicates(t *testing.T) {
@@ -106,4 +111,9 @@ func TestSubCommandDuplicates(t *testing.T) {
 			WithCommand(NewCommand("bar")),
 		)
 	}))
+}
+
+func TestCommandNoArgs(t *testing.T) {
+	command := NewCommand("foo")
+	assert.Error(t, command.Run([]string{}), "no arguments were passed")
 }

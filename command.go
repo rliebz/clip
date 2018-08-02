@@ -1,6 +1,9 @@
 package clip
 
-import "io"
+import (
+	"errors"
+	"io"
+)
 
 // Command is a command or sub-command that can be run from the command-line.
 //
@@ -33,18 +36,22 @@ func (cmd *Command) Description() string { return cmd.description }
 
 // Run runs a command using a given set of args.
 //
-// The args parameter only includes the arguments passed specifically to a
-// given command or sub-command.
+// The args passed should begin with the name of the command itself.
+// For the root command in most applications, the args will be os.Args.
 func (cmd *Command) Run(args []string) error {
-	if len(args) > 0 {
-		if subCmd, ok := cmd.subCommands[args[0]]; ok {
+	if len(args) == 0 {
+		return errors.New("no arguments were passed")
+	}
+
+	if len(args) >= 2 {
+		if subCmd, ok := cmd.subCommands[args[1]]; ok {
 			return subCmd.Run(args[1:])
 		}
 	}
 
 	ctx := Context{
 		Command: cmd,
-		Args:    args,
+		Args:    args[1:],
 	}
 
 	return cmd.action(&ctx)
