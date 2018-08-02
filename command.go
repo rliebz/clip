@@ -8,6 +8,7 @@ type Command struct {
 	name        string
 	description string
 	action      func(*Context) error
+	subCommands map[string]*Command
 	writer      io.Writer
 }
 
@@ -26,6 +27,12 @@ func (cmd *Command) Description() string { return cmd.description }
 
 // Run runs a command using a given set of args.
 func (cmd *Command) Run(args []string) error {
+	if len(args) > 0 {
+		if subCmd, ok := cmd.subCommands[args[0]]; ok {
+			return subCmd.Run(args[1:])
+		}
+	}
+
 	ctx := Context{
 		Command: cmd,
 		Args:    args,

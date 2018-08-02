@@ -1,6 +1,7 @@
 package clip
 
 import (
+	"fmt"
 	"io"
 	"os"
 )
@@ -10,9 +11,10 @@ type commandOption func(*Command)
 // NewCommand creates a new command given a name and command options.
 func NewCommand(name string, options ...commandOption) *Command {
 	cmd := Command{
-		name:   name,
-		action: printCommandHelp,
-		writer: os.Stdout,
+		name:        name,
+		action:      printCommandHelp,
+		subCommands: map[string]*Command{},
+		writer:      os.Stdout,
 	}
 
 	// Overwrite defaults with passed options
@@ -41,5 +43,15 @@ func WithDescription(description string) commandOption {
 func WithWriter(writer io.Writer) commandOption {
 	return func(cmd *Command) {
 		cmd.writer = writer
+	}
+}
+
+// WithCommand adds a sub-command.
+func WithCommand(subCmd *Command) commandOption {
+	return func(cmd *Command) {
+		if _, exists := cmd.subCommands[subCmd.Name()]; exists {
+			panic(fmt.Sprintf("a sub-command with name %q already exists", subCmd.Name()))
+		}
+		cmd.subCommands[subCmd.Name()] = subCmd
 	}
 }

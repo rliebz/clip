@@ -62,3 +62,48 @@ func TestCommandArgs(t *testing.T) {
 	assert.NilError(t, command.Run(args))
 	assert.Assert(t, wasCalled)
 }
+
+func TestSubCommandArgs(t *testing.T) {
+	cmdName := "foo"
+	subCmdName := "bar"
+	args := []string{"a", "b", "c"}
+
+	subCmdWasCalled := false
+	subCmdAction := func(ctx *Context) error {
+		subCmdWasCalled = true
+		assert.DeepEqual(t, ctx.Args, args)
+		return nil
+	}
+	defer func() { assert.Check(t, subCmdWasCalled) }()
+
+	subCommand := NewCommand(
+		subCmdName,
+		WithAction(subCmdAction),
+	)
+
+	cmdWasCalled := false
+	cmdAction := func(ctx *Context) error {
+		cmdWasCalled = true
+		return nil
+	}
+	defer func() { assert.Check(t, !cmdWasCalled) }()
+
+	command := NewCommand(
+		cmdName,
+		WithAction(cmdAction),
+		WithCommand(subCommand),
+	)
+
+	allArgs := append([]string{subCmdName}, args...)
+	assert.NilError(t, command.Run(allArgs))
+}
+
+func TestSubCommandDuplicates(t *testing.T) {
+	assert.Assert(t, cmp.Panics(func() {
+		NewCommand(
+			"foo",
+			WithCommand(NewCommand("bar")),
+			WithCommand(NewCommand("bar")),
+		)
+	}))
+}
