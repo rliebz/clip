@@ -9,6 +9,10 @@ import (
 type commandOption func(*Command)
 
 // NewCommand creates a new command given a name and command options.
+//
+// By default, commands will print their help documentation when invoked.
+// Different configuration options can be passed as a command is created, but
+// the command returned will be immutable.
 func NewCommand(name string, options ...commandOption) *Command {
 	cmd := Command{
 		name:        name,
@@ -25,13 +29,6 @@ func NewCommand(name string, options ...commandOption) *Command {
 	return &cmd
 }
 
-// WithAction sets a Command's behavior when invoked.
-func WithAction(action func(*Context) error) commandOption {
-	return func(cmd *Command) {
-		cmd.action = action
-	}
-}
-
 // WithDescription adds a short description to a command.
 func WithDescription(description string) commandOption {
 	return func(cmd *Command) {
@@ -39,10 +36,10 @@ func WithDescription(description string) commandOption {
 	}
 }
 
-// WithWriter sets the writer for writing output.
-func WithWriter(writer io.Writer) commandOption {
+// WithAction sets a Command's behavior when invoked.
+func WithAction(action func(*Context) error) commandOption {
 	return func(cmd *Command) {
-		cmd.writer = writer
+		cmd.action = action
 	}
 }
 
@@ -53,5 +50,12 @@ func WithCommand(subCmd *Command) commandOption {
 			panic(fmt.Sprintf("a sub-command with name %q already exists", subCmd.Name()))
 		}
 		cmd.subCommands[subCmd.Name()] = subCmd
+	}
+}
+
+// WithWriter sets the writer for writing output.
+func WithWriter(writer io.Writer) commandOption {
+	return func(cmd *Command) {
+		cmd.writer = writer
 	}
 }
