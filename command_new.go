@@ -29,6 +29,13 @@ func NewCommand(name string, options ...commandOption) *Command {
 	return &cmd
 }
 
+// WithSummary adds a short description to a command.
+func WithSummary(summary string) commandOption {
+	return func(cmd *Command) {
+		cmd.summary = summary
+	}
+}
+
 // WithDescription adds a short description to a command.
 func WithDescription(description string) commandOption {
 	return func(cmd *Command) {

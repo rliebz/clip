@@ -26,12 +26,19 @@ func main() {
 }
 ```
 
+By default, commands with no action specified print the help documentation:
+
+```bash
+$ my-app
+my-app
+```
+
 Of course, this doesn't actually do anything interesting. To create a command:
 
 ```go
 hello := clip.NewCommand(
   "hello",
-  clip.WithDescription("Greet the world"),
+  clip.WithSummary("Greet the world"),
   clip.WithAction(func(ctx *clip.Context) error {
     fmt.Println("Hello, world!")
     return nil
@@ -53,7 +60,7 @@ Arguments and flags can be used as well:
 ```go
 hello := clip.NewCommand(
   "hello",
-  clip.WithDescription("Greet a friend"),
+  clip.WithSummary("Greet a friend"),
   clip.WithFlag(
     clip.NewBoolFlag(
       "loud",

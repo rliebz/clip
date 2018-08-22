@@ -4,7 +4,10 @@ import (
 	"html/template"
 )
 
-const helpTemplateString = `{{.Name}} - {{.Description}}`
+const helpTemplateString = `{{.Name}}{{if .Summary}} - {{.Summary}}{{end}}{{if .Description}}
+
+{{.Description}}{{end}}
+`
 
 func printCommandHelp(ctx *Context) error {
 	t := template.Must(template.New("help").Parse(helpTemplateString))

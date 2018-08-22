@@ -15,6 +15,7 @@ import (
 // is the only way to configure a command.
 type Command struct {
 	name        string
+	summary     string
 	description string
 	action      func(*Context) error
 	subCommands map[string]*Command
@@ -31,7 +32,10 @@ type Context struct {
 // Name is the name of the command.
 func (cmd *Command) Name() string { return cmd.name }
 
-// Description is a short description of the command.
+// Summary is a one-line description of the command.
+func (cmd *Command) Summary() string { return cmd.summary }
+
+// Description is a multi-line description of the command.
 func (cmd *Command) Description() string { return cmd.description }
 
 // Run runs a command using a given set of args.

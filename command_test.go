@@ -9,6 +9,18 @@ import (
 )
 
 func TestCommandName(t *testing.T) {
+	name := "foo"
+	command := NewCommand("foo")
+	assert.Equal(t, command.Name(), name)
+}
+
+func TestCommandSummary(t *testing.T) {
+	summary := "some summary"
+	command := NewCommand("foo", WithSummary(summary))
+	assert.Equal(t, command.Summary(), summary)
+}
+
+func TestCommandDescription(t *testing.T) {
 	description := "some description"
 	command := NewCommand("foo", WithDescription(description))
 	assert.Equal(t, command.Description(), description)
@@ -19,12 +31,14 @@ func TestCommandRunHelp(t *testing.T) {
 	output := new(bytes.Buffer)
 	command := NewCommand(
 		cmdName,
+		WithSummary("some summary"),
 		WithDescription("some description"),
 		WithWriter(output),
 	)
 	assert.NilError(t, command.Run([]string{cmdName}))
 	helpText := output.String()
 	assert.Check(t, cmp.Contains(helpText, command.Name()))
+	assert.Check(t, cmp.Contains(helpText, command.Summary()))
 	assert.Check(t, cmp.Contains(helpText, command.Description()))
 }
 
