@@ -6,7 +6,10 @@ import (
 
 const helpTemplateString = `{{.Name}}{{if .Summary}} - {{.Summary}}{{end}}{{if .Description}}
 
-{{.Description}}{{end}}
+{{.Description}}{{end}}{{if .Commands}}
+
+Commands:{{range .Commands}}
+  {{.Name}}{{if .Summary}} - {{.Summary}}{{end}}{{end}}{{end}}
 `
 
 func printCommandHelp(ctx *Context) error {

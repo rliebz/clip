@@ -15,10 +15,10 @@ type commandOption func(*Command)
 // the command returned will be immutable.
 func NewCommand(name string, options ...commandOption) *Command {
 	cmd := Command{
-		name:        name,
-		action:      printCommandHelp,
-		subCommands: map[string]*Command{},
-		writer:      os.Stdout,
+		name:          name,
+		action:        printCommandHelp,
+		subCommandMap: map[string]*Command{},
+		writer:        os.Stdout,
 	}
 
 	// Overwrite defaults with passed options
@@ -53,10 +53,12 @@ func WithAction(action func(*Context) error) commandOption {
 // WithCommand adds a sub-command.
 func WithCommand(subCmd *Command) commandOption {
 	return func(cmd *Command) {
-		if _, exists := cmd.subCommands[subCmd.Name()]; exists {
+		if _, exists := cmd.subCommandMap[subCmd.Name()]; exists {
 			panic(fmt.Sprintf("a sub-command with name %q already exists", subCmd.Name()))
 		}
-		cmd.subCommands[subCmd.Name()] = subCmd
+		// Preserve insertion order
+		cmd.commands = append(cmd.commands, subCmd)
+		cmd.subCommandMap[subCmd.Name()] = subCmd
 	}
 }
 
