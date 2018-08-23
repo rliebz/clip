@@ -131,3 +131,19 @@ func TestCommandNoArgs(t *testing.T) {
 	command := NewCommand("foo")
 	assert.Error(t, command.Run([]string{}), "no arguments were passed")
 }
+
+func TestCommandNoSubCommands(t *testing.T) {
+	command := NewCommand("foo")
+	parent := NewCommand("bar", WithCommand(command))
+	assert.Error(t, parent.Run([]string{parent.Name()}), "required sub-command not passed")
+}
+
+func TestCommandNonExistentSubCommand(t *testing.T) {
+	command := NewCommand("foo")
+	parent := NewCommand("bar", WithCommand(command))
+	assert.Error(
+		t,
+		parent.Run([]string{parent.Name(), "wrong"}),
+		`undefined sub-command "wrong"`,
+	)
+}

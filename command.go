@@ -23,13 +23,6 @@ type Command struct {
 	writer        io.Writer
 }
 
-// Context is a command context with runtime metadata.
-type Context struct {
-	*Command
-
-	Args []string
-}
-
 // Name is the name of the command.
 func (cmd *Command) Name() string { return cmd.name }
 
@@ -51,16 +44,10 @@ func (cmd *Command) Run(args []string) error {
 		return errors.New("no arguments were passed")
 	}
 
-	if len(args) >= 2 {
-		if subCmd, ok := cmd.subCommandMap[args[1]]; ok {
-			return subCmd.Run(args[1:])
-		}
-	}
-
 	ctx := Context{
 		Command: cmd,
 		Args:    args[1:],
 	}
 
-	return cmd.action(&ctx)
+	return ctx.run()
 }
