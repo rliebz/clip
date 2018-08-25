@@ -62,16 +62,16 @@ hello := clip.NewCommand(
   "hello",
   clip.WithSummary("Greet a friend"),
   clip.WithFlag(
-    clip.NewBoolFlag(
+    clipflag.NewBool(
       "loud",
-      clip.WithFlagDescription("Whether to pump up the volume to max"),
+      clipflag.WithSummary("Whether to pump up the volume to max"),
     ),
   ),
   clip.WithArg(
-    clip.NewArg(
+    cliparg.New(
       "name",
-      clip.WithArgDescription("The person to greet"),
-      clip.WithArgValues([]string{"Alice", "Bruce", "Carl"}),
+      cliparg.WithSummary("The person to greet"),
+      cliparg.WithValues([]string{"Alice", "Bruce", "Carl"}),
     ),
   ),
   clip.WithAction(func(ctx *clip.Context) error {
