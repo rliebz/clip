@@ -75,7 +75,7 @@ hello := clip.NewCommand(
     ),
   ),
   clip.WithAction(func(ctx *clip.Context) error {
-    greeting := fmt.Sprintf("Hello, %s\n", ctx.Args[0])
+    greeting := fmt.Sprintf("Hello, %s\n", ctx.Args()[0])
     if ctx.Flags["loud"] {
       greeting = strings.ToUpper(greeting)
     }

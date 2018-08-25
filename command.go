@@ -46,7 +46,7 @@ func (cmd *Command) Run(args []string) error {
 
 	ctx := Context{
 		Command: cmd,
-		Args:    args[1:],
+		args:    args[1:],
 	}
 
 	return ctx.run()

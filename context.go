@@ -9,10 +9,12 @@ import (
 type Context struct {
 	*Command
 
+	args   []string
 	parent *Context
-
-	Args []string
 }
+
+// Args returns the list of arguments.
+func (ctx *Context) Args() []string { return ctx.args }
 
 // Parent is the context's parent context.
 func (ctx *Context) Parent() *Context { return ctx.parent }
@@ -34,17 +36,17 @@ func (ctx *Context) run() error {
 	}
 
 	// Sub commands, but nothing passed
-	if len(ctx.Args) == 0 {
+	if len(ctx.args) == 0 {
 		// TODO: Should help be printed?
 		return errors.New("required sub-command not passed")
 	}
 
 	// Sub commands, something passed
-	subCmdName := ctx.Args[0]
+	subCmdName := ctx.args[0]
 	if subCmd, ok := ctx.subCommandMap[subCmdName]; ok {
 		subCtx := Context{
 			Command: subCmd,
-			Args:    ctx.Args[1:],
+			args:    ctx.args[1:],
 			parent:  ctx,
 		}
 		return subCtx.run()
