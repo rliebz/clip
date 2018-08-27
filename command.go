@@ -44,10 +44,15 @@ func (cmd *Command) Run(args []string) error {
 		return errors.New("no arguments were passed")
 	}
 
-	ctx := Context{
+	ctx := &Context{
 		Command: cmd,
 		args:    args[1:],
 	}
 
-	return ctx.run()
+	if err := ctx.run(); err != nil {
+		printErrorHelp(err)
+		return err
+	}
+
+	return nil
 }

@@ -1,10 +1,5 @@
 package clip
 
-import (
-	"errors"
-	"fmt"
-)
-
 // Context is a command context with runtime metadata.
 type Context struct {
 	*Command
@@ -37,8 +32,7 @@ func (ctx *Context) run() error {
 
 	// Sub commands, but nothing passed
 	if len(ctx.args) == 0 {
-		// TODO: Should help be printed?
-		return errors.New("required sub-command not passed")
+		return newUsageError(ctx, "no sub-command passed")
 	}
 
 	// Sub commands, something passed
@@ -52,6 +46,5 @@ func (ctx *Context) run() error {
 		return subCtx.run()
 	}
 
-	return fmt.Errorf("undefined sub-command %q", subCmdName)
-
+	return newUsageErrorf(ctx, "undefined sub-command %q", subCmdName)
 }

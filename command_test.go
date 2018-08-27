@@ -2,6 +2,7 @@ package clip
 
 import (
 	"bytes"
+	"errors"
 	"testing"
 
 	"gotest.tools/assert"
@@ -43,21 +44,32 @@ func TestCommandRunHelp(t *testing.T) {
 }
 
 func TestCommandAction(t *testing.T) {
-	cmdName := "foo"
-
 	wasCalled := false
 	action := func(ctx *Context) error {
 		wasCalled = true
 		return nil
 	}
 
-	command := NewCommand(
-		cmdName,
-		WithAction(action),
-	)
+	command := NewCommand("foo", WithAction(action))
 
 	assert.Check(t, !wasCalled)
-	assert.NilError(t, command.Run([]string{cmdName}))
+	assert.NilError(t, command.Run([]string{command.Name()}))
+	assert.Check(t, wasCalled)
+}
+
+func TestCommandActionError(t *testing.T) {
+	err := errors.New("some error")
+
+	wasCalled := false
+	action := func(ctx *Context) error {
+		wasCalled = true
+		return err
+	}
+
+	command := NewCommand("foo", WithAction(action))
+
+	assert.Check(t, !wasCalled)
+	assert.Error(t, command.Run([]string{command.Name()}), err.Error())
 	assert.Check(t, wasCalled)
 }
 
@@ -135,7 +147,7 @@ func TestCommandNoArgs(t *testing.T) {
 func TestCommandNoSubCommands(t *testing.T) {
 	command := NewCommand("foo")
 	parent := NewCommand("bar", WithCommand(command))
-	assert.Error(t, parent.Run([]string{parent.Name()}), "required sub-command not passed")
+	assert.Error(t, parent.Run([]string{parent.Name()}), "no sub-command passed")
 }
 
 func TestCommandNonExistentSubCommand(t *testing.T) {
