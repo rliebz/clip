@@ -1,9 +1,5 @@
 package clip
 
-import (
-	"log"
-)
-
 // Context is a command context with runtime metadata.
 type Context struct {
 	*Command
@@ -27,31 +23,11 @@ func (ctx *Context) Root() *Context {
 	return cur
 }
 
-// PrintError prints a context-related error.
-func (ctx *Context) PrintError(err error) {
-	l := log.New(ctx.writer, "", 0)
-	l.Printf("Error: %s\n", err)
-
-	if ectx, ok := err.(errorContext); ok {
-		l.Println()
-		l.Println(ectx.ErrorContext())
-	}
-}
-
-type errorContext interface {
-	ErrorContext() string
-}
-
 // run runs the command with a given context.
 func (ctx *Context) run() error {
-	// No sub commands
-	if len(ctx.commands) == 0 {
+	// No sub commands or command action
+	if len(ctx.commands) == 0 || len(ctx.args) == 0 {
 		return ctx.action(ctx)
-	}
-
-	// Sub commands, but nothing passed
-	if len(ctx.args) == 0 {
-		return newUsageError(ctx, "no sub-command passed")
 	}
 
 	// Sub commands, something passed

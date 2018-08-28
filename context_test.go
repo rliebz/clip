@@ -29,7 +29,7 @@ func TestContextParent(t *testing.T) {
 	)
 
 	args := []string{parent.Name(), child.Name()}
-	assert.NilError(t, parent.Run(args))
+	assert.NilError(t, parent.Execute(args))
 	assert.Assert(t, wasCalled)
 	assert.Check(t, pctx.Name() == parent.Name())
 	assert.Check(t, cmp.DeepEqual(pctx.Args(), args[1:]))
@@ -48,7 +48,7 @@ func TestContextParentNil(t *testing.T) {
 		WithAction(action),
 	)
 
-	assert.NilError(t, cmd.Run([]string{cmd.Name()}))
+	assert.NilError(t, cmd.Execute([]string{cmd.Name()}))
 	assert.Assert(t, wasCalled)
 }
 
@@ -75,7 +75,7 @@ func TestContextRoot(t *testing.T) {
 
 	for _, tt := range testCases {
 		t.Run(fmt.Sprintf("chain of %d command(s)", len(tt.args)), func(t *testing.T) {
-			assert.NilError(t, tt.cmd.Run(tt.args))
+			assert.NilError(t, tt.cmd.Execute(tt.args))
 			assert.Check(t, tctx.Root().Name() == tt.cmd.Name())
 		})
 	}

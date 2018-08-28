@@ -1,40 +1,10 @@
 package clip
 
 import (
-	"bytes"
 	"fmt"
 	"html/template"
 	"io"
 )
-
-// newUsageError creates an error which causes help to be printed.
-func newUsageError(ctx *Context, message string) usageError { // nolint: unparam
-	return usageError{
-		context: ctx,
-		message: message,
-	}
-}
-
-// newUsageErrorf creates an error which causes help to be printed.
-func newUsageErrorf(ctx *Context, format string, a ...interface{}) usageError { // nolint: unparam
-	return usageError{
-		context: ctx,
-		message: fmt.Sprintf(format, a...),
-	}
-}
-
-// usageError is an error caused by incorrect usage.
-type usageError struct {
-	context *Context
-	message string
-}
-
-func (e usageError) Error() string { return e.message }
-func (e usageError) ErrorContext() string {
-	b := new(bytes.Buffer)
-	_ = writeCommandHelp(b, e.context)
-	return b.String()
-}
 
 // newHelpContext creates a helpContext from a Context.
 func newHelpContext(ctx *Context) *helpContext {
@@ -78,7 +48,7 @@ Commands:{{range .Commands}}
   {{padCommand .Name}}{{if .Summary}}{{.Summary}}{{end}}{{end}}{{end}}
 `
 
-func printCommandHelp(ctx *Context) error {
+var printCommandHelp = func(ctx *Context) error {
 	return writeCommandHelp(ctx.writer, ctx)
 }
 

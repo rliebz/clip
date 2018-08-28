@@ -20,15 +20,13 @@ import (
 
 func main() {
   app := clip.NewCommand("my-app")
-  if err := app.Run(os.Args); err != nil {
-    log.Fatal(err)
-  }
+  os.Exit(app.Run())
 }
 ```
 
 By default, commands with no action specified print the help documentation:
 
-```bash
+```text
 $ my-app
 my-app
 ```
@@ -47,12 +45,28 @@ hello := clip.NewCommand(
 
 app := clip.NewCommand(
   "my-app",
+  clip.WithSummary("A demo application"),
   clip.WithCommand(hello),
 )
 
-if err := app.Run(os.Args); err != nil {
-  log.Fatal(err)
-}
+os.Exit(app.Run())
+```
+
+Now that there is functionality, the help documentation is more useful:
+
+```text
+$ my-app
+my-app - A demo application
+
+Commands:
+  hello  Greet the world
+```
+
+And the command can be run:
+
+```text
+$ my-app hello
+Hello, world!
 ```
 
 Arguments and flags can be used as well:
@@ -89,9 +103,7 @@ app := clip.NewCommand(
   clip.WithCommand(hello),
 )
 
-if err := app.Run(os.Args); err != nil {
-  log.Fatal(err)
-}
+os.Exit(app.Run())
 ```
 
 
