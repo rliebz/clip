@@ -1,5 +1,9 @@
 package clip
 
+import (
+	"log"
+)
+
 // Context is a command context with runtime metadata.
 type Context struct {
 	*Command
@@ -21,6 +25,21 @@ func (ctx *Context) Root() *Context {
 		cur = cur.parent
 	}
 	return cur
+}
+
+// PrintError prints a context-related error.
+func (ctx *Context) PrintError(err error) {
+	l := log.New(ctx.writer, "", 0)
+	l.Printf("Error: %s\n", err)
+
+	if ectx, ok := err.(errorContext); ok {
+		l.Println()
+		l.Println(ectx.ErrorContext())
+	}
+}
+
+type errorContext interface {
+	ErrorContext() string
 }
 
 // run runs the command with a given context.

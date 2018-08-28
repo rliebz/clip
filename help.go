@@ -1,22 +1,11 @@
 package clip
 
 import (
+	"bytes"
 	"fmt"
 	"html/template"
+	"io"
 )
-
-func printErrorHelp(err error) {
-	w, ok := err.(wronglyUsed)
-	if !ok {
-		return
-	}
-
-	_ = printCommandHelp(w.WronglyUsedContext())
-}
-
-type wronglyUsed interface {
-	WronglyUsedContext() *Context
-}
 
 // newUsageError creates an error which causes help to be printed.
 func newUsageError(ctx *Context, message string) usageError { // nolint: unparam
@@ -40,8 +29,12 @@ type usageError struct {
 	message string
 }
 
-func (e usageError) Error() string                { return e.message }
-func (e usageError) WronglyUsedContext() *Context { return e.context }
+func (e usageError) Error() string { return e.message }
+func (e usageError) ErrorContext() string {
+	b := new(bytes.Buffer)
+	_ = writeCommandHelp(b, e.context)
+	return b.String()
+}
 
 // newHelpContext creates a helpContext from a Context.
 func newHelpContext(ctx *Context) *helpContext {
@@ -86,12 +79,16 @@ Commands:{{range .Commands}}
 `
 
 func printCommandHelp(ctx *Context) error {
+	return writeCommandHelp(ctx.writer, ctx)
+}
+
+func writeCommandHelp(wr io.Writer, ctx *Context) error {
 	hctx := newHelpContext(ctx)
 	t := template.New("help").Funcs(template.FuncMap{
 		"padCommand": getCommandPadder(hctx),
 	})
 	t = template.Must(t.Parse(helpTemplateString))
-	return t.Execute(ctx.writer, hctx)
+	return t.Execute(wr, hctx)
 }
 
 func getCommandPadder(ctx *helpContext) func(string) string {

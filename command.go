@@ -40,17 +40,20 @@ func (cmd *Command) Commands() []*Command { return cmd.commands }
 // The args passed should begin with the name of the command itself.
 // For the root command in most applications, the args will be os.Args.
 func (cmd *Command) Run(args []string) error {
-	if len(args) == 0 {
-		return errors.New("no arguments were passed")
-	}
-
 	ctx := &Context{
 		Command: cmd,
-		args:    args[1:],
 	}
 
+	if len(args) == 0 {
+		err := errors.New("no arguments were passed")
+		ctx.PrintError(err)
+		return err
+	}
+
+	ctx.args = args[1:]
+
 	if err := ctx.run(); err != nil {
-		printErrorHelp(err)
+		ctx.PrintError(err)
 		return err
 	}
 
