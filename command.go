@@ -16,13 +16,15 @@ import (
 // The command type is immutable once created, so passing options to NewCommand
 // is the only way to configure a command.
 type Command struct {
-	name          string
-	summary       string
-	description   string
-	action        func(*Context) error
-	commands      []*Command
-	subCommandMap map[string]*Command
-	writer        io.Writer
+	name        string
+	summary     string
+	description string
+	hidden      bool
+	action      func(*Context) error
+	writer      io.Writer
+
+	visibleCommands []*Command
+	subCommandMap   map[string]*Command
 }
 
 // Name is the name of the command.
@@ -37,8 +39,8 @@ func (cmd *Command) Description() string { return cmd.description }
 // Writer is the writer for the command.
 func (cmd *Command) Writer() io.Writer { return cmd.writer }
 
-// Commands is the list of sub-commands in order.
-func (cmd *Command) Commands() []*Command { return cmd.commands }
+// VisibleCommands is the list of sub-commands in order.
+func (cmd *Command) VisibleCommands() []*Command { return cmd.visibleCommands }
 
 // Execute runs a command using given args and returns the raw error.
 //

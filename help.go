@@ -9,7 +9,7 @@ import (
 // newHelpContext creates a helpContext from a Context.
 func newHelpContext(ctx *Context) *helpContext {
 	max := 0
-	for _, cmd := range ctx.commands {
+	for _, cmd := range ctx.visibleCommands {
 		if len(cmd.Name()) > max {
 			max = len(cmd.Name())
 		}
@@ -42,9 +42,9 @@ func (ctx *helpContext) FullName() string {
 
 const helpTemplateString = `{{.FullName}}{{if .Summary}} - {{.Summary}}{{end}}{{if .Description}}
 
-{{.Description}}{{end}}{{if .Commands}}
+{{.Description}}{{end}}{{if .VisibleCommands}}
 
-Commands:{{range .Commands}}
+Commands:{{range .VisibleCommands}}
   {{padCommand .Name}}{{if .Summary}}{{.Summary}}{{end}}{{end}}{{end}}
 `
 

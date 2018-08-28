@@ -26,7 +26,7 @@ func (ctx *Context) Root() *Context {
 // run runs the command with a given context.
 func (ctx *Context) run() error {
 	// No sub commands or command action
-	if len(ctx.commands) == 0 || len(ctx.args) == 0 {
+	if len(ctx.subCommandMap) == 0 || len(ctx.args) == 0 {
 		return ctx.action(ctx)
 	}
 

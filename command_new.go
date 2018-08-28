@@ -6,14 +6,12 @@ import (
 	"os"
 )
 
-type commandOption func(*Command)
-
 // NewCommand creates a new command given a name and command options.
 //
 // By default, commands will print their help documentation when invoked.
 // Different configuration options can be passed as a command is created, but
 // the command returned will be immutable.
-func NewCommand(name string, options ...commandOption) *Command {
+func NewCommand(name string, options ...func(*Command)) *Command {
 	cmd := Command{
 		name:          name,
 		action:        printCommandHelp,
@@ -29,41 +27,48 @@ func NewCommand(name string, options ...commandOption) *Command {
 	return &cmd
 }
 
+// AsHidden hides a command from documentation.
+func AsHidden(cmd *Command) {
+	cmd.hidden = true
+}
+
 // WithSummary adds a short description to a command.
-func WithSummary(summary string) commandOption {
+func WithSummary(summary string) func(*Command) {
 	return func(cmd *Command) {
 		cmd.summary = summary
 	}
 }
 
 // WithDescription adds a short description to a command.
-func WithDescription(description string) commandOption {
+func WithDescription(description string) func(*Command) {
 	return func(cmd *Command) {
 		cmd.description = description
 	}
 }
 
 // WithAction sets a Command's behavior when invoked.
-func WithAction(action func(*Context) error) commandOption {
+func WithAction(action func(*Context) error) func(*Command) {
 	return func(cmd *Command) {
 		cmd.action = action
 	}
 }
 
 // WithCommand adds a sub-command.
-func WithCommand(subCmd *Command) commandOption {
+func WithCommand(subCmd *Command) func(*Command) {
 	return func(cmd *Command) {
 		if _, exists := cmd.subCommandMap[subCmd.Name()]; exists {
 			panic(fmt.Sprintf("a sub-command with name %q already exists", subCmd.Name()))
 		}
-		// Preserve insertion order
-		cmd.commands = append(cmd.commands, subCmd)
 		cmd.subCommandMap[subCmd.Name()] = subCmd
+
+		if !subCmd.hidden {
+			cmd.visibleCommands = append(cmd.visibleCommands, subCmd)
+		}
 	}
 }
 
 // WithWriter sets the writer for writing output.
-func WithWriter(writer io.Writer) commandOption {
+func WithWriter(writer io.Writer) func(*Command) {
 	return func(cmd *Command) {
 		cmd.writer = writer
 	}

@@ -2,6 +2,7 @@ package clip
 
 import (
 	"bytes"
+	"strings"
 	"testing"
 
 	"gotest.tools/assert"
@@ -45,4 +46,21 @@ func TestHelpCommands(t *testing.T) {
 	assert.Check(t, cmp.Contains(output, "child-one    1"))
 	assert.Check(t, cmp.Contains(output, "child-two    2"))
 	assert.Check(t, cmp.Contains(output, "child-three  3"))
+}
+
+func TestHidden(t *testing.T) {
+	buf := new(bytes.Buffer)
+	root := NewCommand(
+		"root",
+		WithWriter(buf),
+		WithCommand(NewCommand("visible")),
+		WithCommand(NewCommand("hidden", AsHidden)),
+	)
+
+	args := []string{root.Name()}
+	assert.NilError(t, root.Execute(args))
+
+	output := buf.String()
+	assert.Check(t, cmp.Contains(output, "visible"))
+	assert.Check(t, !strings.Contains(output, "hidden"))
 }
