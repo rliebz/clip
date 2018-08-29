@@ -20,8 +20,8 @@ func NewCommand(name string, options ...func(*Command)) *Command {
 	}
 
 	// Overwrite defaults with passed options
-	for i := range options {
-		options[i](&cmd)
+	for _, o := range options {
+		o(&cmd)
 	}
 
 	return &cmd
