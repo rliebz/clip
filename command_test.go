@@ -169,7 +169,7 @@ func TestCommandNoSubCommands(t *testing.T) {
 
 	args := []string{parent.Name()}
 	assert.NilError(t, parent.Execute(args))
-	assert.Assert(t, helpPrinted == true)
+	assert.Assert(t, helpPrinted)
 }
 
 func TestCommandNonExistentSubCommand(t *testing.T) {

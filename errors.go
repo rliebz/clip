@@ -71,6 +71,6 @@ type usageError struct {
 func (e usageError) Error() string { return e.message }
 func (e usageError) ErrorContext() string {
 	b := new(bytes.Buffer)
-	_ = writeCommandHelp(b, e.context)
+	_ = writeCommandHelp(b, e.context) // nolint: gas
 	return b.String()
 }
