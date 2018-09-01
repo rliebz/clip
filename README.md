@@ -3,6 +3,8 @@
 Clip is a highly opinionated, highly unstable library for building command-line
 applications, using [functional options for friendly APIs][functional].
 
+**Warning: Clip is incomplete software and should not be used by anyone.**
+
 ## Quick Start
 
 To get an app running requires no special configuration and does not prescribe
@@ -72,11 +74,13 @@ Hello, world!
 Arguments and flags can be used as well:
 
 ```go
+loud := false
 hello := clip.NewCommand(
   "hello",
   clip.WithSummary("Greet a friend"),
   clip.WithFlag(
     clipflag.NewBool(
+      &loud,
       "loud",
       clipflag.WithSummary("Whether to pump up the volume to max"),
     ),
@@ -90,7 +94,7 @@ hello := clip.NewCommand(
   ),
   clip.WithAction(func(ctx *clip.Context) error {
     greeting := fmt.Sprintf("Hello, %s\n", ctx.Args()[0])
-    if ctx.Flags["loud"] {
+    if loud {
       greeting = strings.ToUpper(greeting)
     }
     fmt.Println(greeting)

@@ -5,6 +5,8 @@ import (
 	"io"
 	"log"
 	"os"
+
+	"github.com/spf13/pflag"
 )
 
 // Command is a command or sub-command that can be run from the command-line.
@@ -23,6 +25,7 @@ type Command struct {
 	action      func(*Context) error
 	writer      io.Writer
 
+	flagSet         *pflag.FlagSet
 	visibleCommands []*Command
 	subCommandMap   map[string]*Command
 }
@@ -42,6 +45,9 @@ func (cmd *Command) Writer() io.Writer { return cmd.writer }
 // VisibleCommands is the list of sub-commands in order.
 func (cmd *Command) VisibleCommands() []*Command { return cmd.visibleCommands }
 
+// FlagSet returns the flagset. TODO: Don't expose implementation detail
+func (cmd *Command) FlagSet() *pflag.FlagSet { return cmd.flagSet }
+
 // Execute runs a command using given args and returns the raw error.
 //
 // This function provides more fine-grained control than Run, and can be used
@@ -55,9 +61,7 @@ func (cmd *Command) Execute(args []string) error {
 		return errors.New("no arguments were passed")
 	}
 
-	ctx.args = args[1:]
-
-	if err := ctx.run(); err != nil {
+	if err := ctx.run(args); err != nil {
 		return err
 	}
 

@@ -3,7 +3,10 @@ package clip
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
+
+	"github.com/spf13/pflag"
 )
 
 // NewCommand creates a new command given a name and command options.
@@ -17,7 +20,10 @@ func NewCommand(name string, options ...func(*Command)) *Command {
 		action:        printCommandHelp,
 		subCommandMap: map[string]*Command{},
 		writer:        os.Stdout,
+		flagSet:       pflag.NewFlagSet(name, pflag.ContinueOnError),
 	}
+
+	cmd.flagSet.SetOutput(ioutil.Discard)
 
 	// Overwrite defaults with passed options
 	for _, o := range options {
@@ -32,14 +38,14 @@ func AsHidden(cmd *Command) {
 	cmd.hidden = true
 }
 
-// WithSummary adds a short description to a command.
+// WithSummary adds a one-line description to a command.
 func WithSummary(summary string) func(*Command) {
 	return func(cmd *Command) {
 		cmd.summary = summary
 	}
 }
 
-// WithDescription adds a short description to a command.
+// WithDescription adds a multi-line description to a command.
 func WithDescription(description string) func(*Command) {
 	return func(cmd *Command) {
 		cmd.description = description
