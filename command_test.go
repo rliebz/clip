@@ -3,6 +3,7 @@ package clip
 import (
 	"bytes"
 	"errors"
+	"os"
 	"testing"
 
 	"gotest.tools/assert"
@@ -178,22 +179,27 @@ func TestCommandNonExistentSubCommand(t *testing.T) {
 	assert.Error(
 		t,
 		parent.Execute([]string{parent.Name(), "wrong"}),
-		`undefined sub-command "wrong"`,
+		"undefined sub-command: wrong",
 	)
 }
 
 func TestRun(t *testing.T) {
+	defer func(args []string) { os.Args = args }(os.Args)
+	os.Args = []string{"foo"}
 	buf := new(bytes.Buffer)
 	command := NewCommand(
 		"foo",
 		WithAction(func(ctx *Context) error { return nil }),
 		WithWriter(buf),
 	)
+
 	assert.Assert(t, command.Run() == 0)
 	assert.Check(t, cmp.DeepEqual(buf.String(), ""))
 }
 
 func TestRunError(t *testing.T) {
+	defer func(args []string) { os.Args = args }(os.Args)
+	os.Args = []string{"foo"}
 	err := errors.New("oops")
 	buf := new(bytes.Buffer)
 	command := NewCommand(
@@ -207,6 +213,8 @@ func TestRunError(t *testing.T) {
 }
 
 func TestRunExitError(t *testing.T) {
+	defer func(args []string) { os.Args = args }(os.Args)
+	os.Args = []string{"foo"}
 	err := NewError("oops", 3).(exitError)
 	buf := new(bytes.Buffer)
 	command := NewCommand(
@@ -220,6 +228,8 @@ func TestRunExitError(t *testing.T) {
 }
 
 func TestRunUsageError(t *testing.T) {
+	defer func(args []string) { os.Args = args }(os.Args)
+	os.Args = []string{"foo"}
 	errMessage := "oops"
 	buf := new(bytes.Buffer)
 	command := NewCommand(

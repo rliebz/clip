@@ -25,8 +25,9 @@ func (ctx *Context) Root() *Context {
 
 // run runs the command with a given context.
 func (ctx *Context) run(args []string) error {
-	// TODO: Parsing strips all flags, even after first arg
-	ctx.flagSet.Parse(args[1:])
+	if err := parse(ctx, args[1:]); err != nil {
+		return newUsageError(ctx, err.Error())
+	}
 	ctx.args = ctx.flagSet.Args()
 
 	// No sub commands or command action
@@ -44,5 +45,5 @@ func (ctx *Context) run(args []string) error {
 		return subCtx.run(ctx.args)
 	}
 
-	return newUsageErrorf(ctx, "undefined sub-command %q", subCmdName)
+	return newUsageErrorf(ctx, "undefined sub-command: %s", subCmdName)
 }
