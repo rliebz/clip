@@ -13,8 +13,10 @@ func TestParse(t *testing.T) {
 	var testCases = []struct {
 		args         []string
 		childFlag    bool
+		childSFlag   string
 		childCalled  bool
 		parentFlag   bool
+		parentSFlag  string
 		parentCalled bool
 	}{
 		{
@@ -22,8 +24,30 @@ func TestParse(t *testing.T) {
 			parentCalled: true,
 		},
 		{
+			args:         []string{"foo", "-f"},
+			parentFlag:   true,
+			parentCalled: true,
+		},
+		{
 			args:         []string{"foo", "--flag"},
 			parentFlag:   true,
+			parentCalled: true,
+		},
+		{
+			args:         []string{"foo", "--sflag", "bar"},
+			parentSFlag:  "bar",
+			parentCalled: true,
+		},
+		{
+			args:         []string{"foo", "-fs", "bar"},
+			parentFlag:   true,
+			parentSFlag:  "bar",
+			parentCalled: true,
+		},
+		{
+			args:         []string{"foo", "--sflag", "bar", "--flag"},
+			parentFlag:   true,
+			parentSFlag:  "bar",
 			parentCalled: true,
 		},
 		{
@@ -56,15 +80,42 @@ func TestParse(t *testing.T) {
 			childCalled: true,
 			parentFlag:  true,
 		},
+		{
+			args:        []string{"foo", "-fs=bar", "child"},
+			childCalled: true,
+			parentFlag:  true,
+			parentSFlag: "bar",
+		},
+		{
+			args:        []string{"foo", "-f", "-s=bar", "child"},
+			childCalled: true,
+			parentFlag:  true,
+			parentSFlag: "bar",
+		},
+		{
+			args:        []string{"foo", "--sflag", "bar", "child"},
+			childCalled: true,
+			parentSFlag: "bar",
+		},
+		{
+			args:        []string{"foo", "-fs", "bar", "child", "-fs", "baz"},
+			childFlag:   true,
+			childSFlag:  "baz",
+			childCalled: true,
+			parentFlag:  true,
+			parentSFlag: "bar",
+		},
 	}
 
 	for _, tt := range testCases {
 		t.Run(fmt.Sprintf("args: %v", tt.args), func(t *testing.T) {
 			childFlag := false
+			childSFlag := ""
 			childCalled := false
 			child := NewCommand(
 				"child",
-				WithFlag(clipflag.NewBool(&childFlag, "flag")),
+				WithFlag(clipflag.NewString(&childSFlag, "sflag", clipflag.WithShort("s"))),
+				WithFlag(clipflag.NewBool(&childFlag, "flag", clipflag.WithShort("f"))),
 				WithAction(func(ctx *Context) error {
 					childCalled = true
 					return nil
@@ -72,10 +123,12 @@ func TestParse(t *testing.T) {
 			)
 
 			parentFlag := false
+			parentSFlag := ""
 			parentCalled := false
 			cmd := NewCommand(
 				"foo",
-				WithFlag(clipflag.NewBool(&parentFlag, "flag")),
+				WithFlag(clipflag.NewString(&parentSFlag, "sflag", clipflag.WithShort("s"))),
+				WithFlag(clipflag.NewBool(&parentFlag, "flag", clipflag.WithShort("f"))),
 				WithCommand(child),
 				WithAction(func(ctx *Context) error {
 					parentCalled = true
@@ -87,8 +140,10 @@ func TestParse(t *testing.T) {
 
 			assert.Check(t, cmp.Equal(childCalled, tt.childCalled))
 			assert.Check(t, cmp.Equal(childFlag, tt.childFlag))
+			assert.Check(t, cmp.Equal(childSFlag, tt.childSFlag))
 			assert.Check(t, cmp.Equal(parentCalled, tt.parentCalled))
 			assert.Check(t, cmp.Equal(parentFlag, tt.parentFlag))
+			assert.Check(t, cmp.Equal(parentSFlag, tt.parentSFlag))
 		})
 	}
 
