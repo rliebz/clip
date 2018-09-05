@@ -11,8 +11,9 @@ type flag struct {
 	defineShort func(*pflag.FlagSet)
 
 	// TODO: These
-	envVar string
-	hidden bool
+	envVar     string // nolint
+	deprecated bool   // nolint
+	hidden     bool   // nolint
 }
 
 func (f *flag) Name() string        { return f.name }

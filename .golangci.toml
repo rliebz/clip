@@ -1,9 +1,11 @@
 [issues]
 exclude = [
   # goconst: Ignore for example/test data
-  "string `(foo|bar|baz|qux)` has \\d+ occurrences",
+  'string `(foo|bar|baz|qux)` has \d+ occurrences',
   # golint: false positives for multi-file packages
-  "should have a package comment",
+  'should have a package comment',
+  # golint: Allow unexported return types intentionally
+  'exported func .* returns .*, which can be annoying to use',
 ]
 exclude-use-default = false
 
@@ -25,6 +27,9 @@ fast = false
 
   [linters-settings.govet]
   check-shadowing = true
+
+  [linters-settings.maligned]
+  suggest-new = true
 
   [linters-settings.misspell]
   locale = "US"

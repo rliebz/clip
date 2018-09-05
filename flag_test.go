@@ -12,11 +12,11 @@ import (
 func TestParse(t *testing.T) {
 	var testCases = []struct {
 		args         []string
-		childFlag    bool
 		childSFlag   string
-		childCalled  bool
-		parentFlag   bool
 		parentSFlag  string
+		childFlag    bool
+		parentFlag   bool
+		childCalled  bool
 		parentCalled bool
 	}{
 		{
