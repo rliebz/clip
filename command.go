@@ -28,6 +28,7 @@ type Command struct {
 	flagSet         *pflag.FlagSet
 	visibleCommands []*Command
 	subCommandMap   map[string]*Command
+	flagAction      func(*Context) (wasSet bool, err error)
 }
 
 // Name is the name of the command.

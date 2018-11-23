@@ -21,6 +21,7 @@ func NewCommand(name string, options ...func(*Command)) *Command {
 		subCommandMap: map[string]*Command{},
 		writer:        os.Stdout,
 		flagSet:       pflag.NewFlagSet(name, pflag.ContinueOnError),
+		flagAction:    func(ctx *Context) (bool, error) { return false, nil },
 	}
 
 	cmd.flagSet.SetOutput(ioutil.Discard)

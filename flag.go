@@ -24,6 +24,24 @@ func WithFlag(f Flag) func(*Command) {
 	}
 }
 
+// WithActionFlag adds a flag that performs an action and nothing else.
+// Flags such as `--help` or `--version` fall under this category.
+func WithActionFlag(f Flag, action func(*Context) error) func(*Command) {
+	return func(cmd *Command) {
+		oldAction := cmd.flagAction
+		f.Define(cmd.flagSet)
+		cmd.flagAction = func(ctx *Context) (bool, error) {
+			if wasSet, err := oldAction(ctx); wasSet {
+				return true, err
+			}
+			if cmd.flagSet.Changed(f.Name()) {
+				return true, action(ctx)
+			}
+			return false, nil
+		}
+	}
+}
+
 func parse(ctx *Context, args []string) error {
 	i, err := splitAtFirstArg(ctx, args)
 	if err != nil {

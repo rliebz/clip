@@ -30,6 +30,11 @@ func (ctx *Context) run(args []string) error {
 	}
 	ctx.args = ctx.flagSet.Args()
 
+	// Flag actions
+	if wasSet, err := ctx.flagAction(ctx); wasSet {
+		return err
+	}
+
 	// No sub commands or command action
 	if len(ctx.subCommandMap) == 0 || len(ctx.args) == 0 {
 		return ctx.action(ctx)

@@ -6,6 +6,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/rliebz/clip/clipflag"
 	"gotest.tools/assert"
 	"gotest.tools/assert/cmp"
 )
@@ -78,6 +79,82 @@ func TestCommandActionError(t *testing.T) {
 	assert.Check(t, !wasCalled)
 	assert.Error(t, command.Execute([]string{command.Name()}), err.Error())
 	assert.Check(t, wasCalled)
+}
+
+func TestCommandFlagAction(t *testing.T) {
+	wasCalled := false
+	action := func(ctx *Context) error {
+		wasCalled = true
+		return nil
+	}
+	flagValue := false
+	flag := clipflag.NewBool(&flagValue, "my-flag")
+
+	command := NewCommand("foo", WithActionFlag(flag, action))
+
+	assert.Check(t, !wasCalled)
+	assert.Check(t, !flagValue)
+	assert.NilError(t, command.Execute([]string{command.Name(), "--my-flag"}))
+	assert.Check(t, wasCalled)
+	assert.Check(t, flagValue)
+}
+
+func TestCommandFlagCorrectAction(t *testing.T) {
+	wasCalled := false
+	wrongWasCalled := false
+	action := func(ctx *Context) error {
+		wasCalled = true
+		return nil
+	}
+	wrongAction := func(ctx *Context) error {
+		wrongWasCalled = true
+		return nil
+	}
+
+	notCalledValue := false
+	notCalledFlag := clipflag.NewBool(&notCalledValue, "not-called")
+	correctValue := false
+	correctFlag := clipflag.NewBool(&correctValue, "my-flag")
+	secondValue := false
+	secondFlag := clipflag.NewBool(&secondValue, "second-flag")
+
+	subCommand := NewCommand("bar", WithAction(wrongAction))
+
+	command := NewCommand(
+		"foo",
+		WithCommand(subCommand),
+		WithActionFlag(notCalledFlag, wrongAction),
+		WithActionFlag(correctFlag, action),
+		WithActionFlag(secondFlag, wrongAction),
+	)
+
+	assert.Check(t, !wasCalled)
+	assert.NilError(t, command.Execute(
+		[]string{command.Name(), "--my-flag", "--second-flag", "bar"}),
+	)
+	assert.Check(t, wasCalled)
+	assert.Check(t, !wrongWasCalled)
+}
+
+func TestCommandFlagActionError(t *testing.T) {
+	err := errors.New("some error")
+
+	wasCalled := false
+	action := func(ctx *Context) error {
+		wasCalled = true
+		return err
+	}
+
+	flagValue := false
+	flag := clipflag.NewBool(&flagValue, "my-flag")
+
+	command := NewCommand("foo", WithActionFlag(flag, action))
+
+	assert.Check(t, !wasCalled)
+	assert.Check(t, !flagValue)
+	assert.Error(t, command.Execute([]string{command.Name(), "--my-flag"}), err.Error())
+	assert.Check(t, wasCalled)
+	assert.Check(t, flagValue)
 }
 
 func TestCommandArgs(t *testing.T) {
