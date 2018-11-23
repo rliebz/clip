@@ -1,17 +1,26 @@
 [issues]
 exclude = [
   # goconst: Ignore for example/test data
-  'string `(foo|bar|baz|qux)` has \d+ occurrences',
+  'string `(foo|bar|baz|qux|example|exit \d|mytask|OPTION_VAR)` has \d+ occurrences',
   # golint: false positives for multi-file packages
   'should have a package comment',
   # golint: Allow unexported return types intentionally
   'exported func .* returns .*, which can be annoying to use',
+  # gosec: Duplicate of errcheck
+  'G104: Errors unhandled',
+  # gosec: Allow file inclusions
+  'G304: Potential file inclusion via variable',
 ]
 exclude-use-default = false
 
 [linters]
 enable-all = true
-fast = false
+disable = [
+  "gochecknoglobals", # There are valid use cases for globals
+  "goimports",        # Performance: https://github.com/golangci/golangci-lint/issues/263
+  "maligned",         # Readability is more important than saving bytes
+  "scopelint",        # False positives in tests: https://github.com/kyoh86/scopelint/issues/4
+]
 
 [linters-settings]
 
@@ -27,9 +36,6 @@ fast = false
 
   [linters-settings.govet]
   check-shadowing = true
-
-  [linters-settings.maligned]
-  suggest-new = true
 
   [linters-settings.misspell]
   locale = "US"
