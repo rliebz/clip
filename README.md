@@ -188,18 +188,36 @@ Error: argument "Alex" must be one of: Alice, Bruce, Carl
 ### Flags
 
 The `-h`/`--help` flag is defined by default, but more can be created using
-`clip.WithFlag` and the `clipflag` package:
+`clip.WithFlag`/`clip.WithActionFlag` and the `clipflag` package.
+
+To create a flag that prints the version and exits, use an action flag:
+
+```go
+version := "v0.1.0"
+app := clip.NewCommand(
+  "app",
+  clip.WithActionFlag(
+    clipflag.NewToggle(
+      "version",
+      clipflag.WithShort("V"),
+      clipflag.WithSummary("Print the version and exit"),
+    ),
+    func(ctx *clip.Context) error {
+      fmt.Println(version)
+      return nil
+    },
+  ),
+)
+```
 
 ```go
 loud := false
 hello := clip.NewCommand(
   "hello",
-  clip.WithSummary("Greet the world"),
   clip.WithFlag(
     clipflag.NewBool(
       &loud,
       "loud",
-      clipflag.WithShort("l"),
       clipflag.WithSummary("Whether to pump up the volume to max"),
     ),
   ),

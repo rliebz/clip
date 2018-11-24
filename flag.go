@@ -13,11 +13,16 @@ type Flag interface {
 	Name() string
 	Summary() string
 
+	// Define adds the flag to a given flagset.
+	// This method is invoked when creating a new command before the flags are
+	// parsed.
+	//
 	// TODO: Replace pflag.FlagSet with an interface
 	Define(*pflag.FlagSet)
 }
 
 // WithFlag adds a flag.
+// Typically, flags from the clipflag package will be passed here.
 func WithFlag(f Flag) func(*Command) {
 	return func(cmd *Command) {
 		f.Define(cmd.flagSet)
@@ -25,7 +30,10 @@ func WithFlag(f Flag) func(*Command) {
 }
 
 // WithActionFlag adds a flag that performs an action and nothing else.
-// Flags such as `--help` or `--version` fall under this category.
+// Flags such as --help or --version fall under this category.
+//
+// The action will occur if the flag is passed, regardless of the value, so
+// typically clipflag.NewToggle will be used here.
 func WithActionFlag(f Flag, action func(*Context) error) func(*Command) {
 	return func(cmd *Command) {
 		oldAction := cmd.flagAction

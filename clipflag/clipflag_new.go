@@ -2,6 +2,23 @@ package clipflag
 
 import "github.com/spf13/pflag"
 
+// NewToggle creates a new toggle flag.
+// Toggle flags have no associated value, but can be passed like boolean flags
+// to toggle something on. This is the simplest way to create an action flag.
+func NewToggle(name string, options ...func(*flag)) *flag {
+	f := newConfig(name, options...)
+
+	f.define = func(fs *pflag.FlagSet) {
+		fs.Bool(name, false, f.summary)
+	}
+
+	f.defineShort = func(fs *pflag.FlagSet) {
+		fs.BoolP(name, f.short, false, f.summary)
+	}
+
+	return &f
+}
+
 // NewBool creates a new boolean flag.
 func NewBool(value *bool, name string, options ...func(*flag)) *flag {
 	f := newConfig(name, options...)
