@@ -5,7 +5,7 @@ import "github.com/spf13/pflag"
 // NewToggle creates a new toggle flag.
 // Toggle flags have no associated value, but can be passed like boolean flags
 // to toggle something on. This is the simplest way to create an action flag.
-func NewToggle(name string, options ...func(*flag)) *flag {
+func NewToggle(name string, options ...func(*Flag)) *Flag {
 	f := newConfig(name, options...)
 
 	f.define = func(fs *pflag.FlagSet) {
@@ -20,7 +20,7 @@ func NewToggle(name string, options ...func(*flag)) *flag {
 }
 
 // NewBool creates a new boolean flag.
-func NewBool(value *bool, name string, options ...func(*flag)) *flag {
+func NewBool(value *bool, name string, options ...func(*Flag)) *Flag {
 	f := newConfig(name, options...)
 
 	f.define = func(fs *pflag.FlagSet) {
@@ -35,7 +35,7 @@ func NewBool(value *bool, name string, options ...func(*flag)) *flag {
 }
 
 // NewString creates a new string flag.
-func NewString(value *string, name string, options ...func(*flag)) *flag {
+func NewString(value *string, name string, options ...func(*Flag)) *Flag {
 	f := newConfig(name, options...)
 
 	f.define = func(fs *pflag.FlagSet) {
@@ -49,8 +49,8 @@ func NewString(value *string, name string, options ...func(*flag)) *flag {
 	return &f
 }
 
-func newConfig(name string, options ...func(*flag)) flag {
-	f := flag{name: name}
+func newConfig(name string, options ...func(*Flag)) Flag {
+	f := Flag{name: name}
 	for _, o := range options {
 		o(&f)
 	}
@@ -60,22 +60,22 @@ func newConfig(name string, options ...func(*flag)) flag {
 
 // WithShort adds a short name to a flag.
 // Panics if the name is not exactly one ASCII character.
-func WithShort(name string) func(*flag) {
-	return func(f *flag) {
+func WithShort(name string) func(*Flag) {
+	return func(f *Flag) {
 		f.short = name
 	}
 }
 
 // WithSummary adds a one-line description to a flag.
-func WithSummary(summary string) func(*flag) {
-	return func(f *flag) {
+func WithSummary(summary string) func(*Flag) {
+	return func(f *Flag) {
 		f.summary = summary
 	}
 }
 
 // WithDescription adds a multi-line description to a flag.
-func WithDescription(description string) func(*flag) {
-	return func(f *flag) {
+func WithDescription(description string) func(*Flag) {
+	return func(f *Flag) {
 		f.description = description
 	}
 }
