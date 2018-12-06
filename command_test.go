@@ -3,6 +3,7 @@ package clip
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"os"
 	"testing"
 
@@ -49,6 +50,66 @@ func TestCommandExecuteHelp(t *testing.T) {
 	assert.Check(t, cmp.Contains(helpText, command.Name()))
 	assert.Check(t, cmp.Contains(helpText, command.Summary()))
 	assert.Check(t, cmp.Contains(helpText, command.Description()))
+}
+
+func TestCommandDefaultHelpFlag(t *testing.T) {
+	const (
+		callsHelp   = iota
+		callsAction = iota
+		hasError    = iota
+	)
+
+	testCases := []struct {
+		flag     Flag
+		passed   string
+		behavior int
+	}{
+		{clipflag.NewToggle("help"), "--help", callsAction},
+		{clipflag.NewToggle("help"), "-h", hasError},
+		{clipflag.NewToggle("help", clipflag.WithShort("h")), "--help", callsAction},
+		{clipflag.NewToggle("help", clipflag.WithShort("h")), "-h", callsAction},
+		{clipflag.NewToggle("help", clipflag.WithShort("n")), "--help", callsAction},
+		{clipflag.NewToggle("help", clipflag.WithShort("n")), "-h", hasError},
+		{clipflag.NewToggle("not-help"), "--help", callsHelp},
+		{clipflag.NewToggle("not-help"), "-h", callsHelp},
+		{clipflag.NewToggle("not-help", clipflag.WithShort("h")), "--help", callsHelp},
+		{clipflag.NewToggle("not-help", clipflag.WithShort("h")), "-h", callsAction},
+	}
+
+	for _, tt := range testCases {
+		t.Run(
+			fmt.Sprintf("Flag %q/%q passed %s", tt.flag.Name(), tt.flag.Short(), tt.passed),
+			func(t *testing.T) {
+				cmdName := "foo"
+				output := new(bytes.Buffer)
+				flagActionCalled := false
+				command := NewCommand(
+					cmdName,
+					WithActionFlag(
+						tt.flag,
+						func(ctx *Context) error {
+							flagActionCalled = true
+							return nil
+						},
+					),
+					WithWriter(output),
+				)
+				err := command.Execute([]string{cmdName, tt.passed})
+				helpText := output.String()
+				switch tt.behavior {
+				case callsHelp:
+					assert.NilError(t, err)
+					assert.Check(t, !flagActionCalled)
+					assert.Check(t, cmp.Contains(helpText, command.Name()))
+				case callsAction:
+					assert.NilError(t, err)
+					assert.Check(t, flagActionCalled)
+					assert.Check(t, helpText == "")
+				case hasError:
+					assert.Error(t, err, "unknown shorthand flag: 'h' in -h")
+				}
+			})
+	}
 }
 
 func TestCommandAction(t *testing.T) {

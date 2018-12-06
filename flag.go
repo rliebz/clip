@@ -11,6 +11,7 @@ import (
 // Typically, this will be implemented by a flag from the clipflag package.
 type Flag interface {
 	Name() string
+	Short() string
 	Summary() string
 
 	// Define adds the flag to a given flagset.

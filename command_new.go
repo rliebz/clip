@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/rliebz/clip/clipflag"
 	"github.com/spf13/pflag"
 )
 
@@ -31,7 +32,25 @@ func NewCommand(name string, options ...func(*Command)) *Command {
 		o(&cmd)
 	}
 
+	applyConditionalDefaults(&cmd)
+
 	return &cmd
+}
+
+// applyConditionalDefaults applies any conditionally-applied defaults.
+// This includes things like a help or version flag that may not be applicable
+// depending on which options are passed.
+func applyConditionalDefaults(cmd *Command) {
+	if cmd.flagSet.Lookup("help") == nil {
+		var flag *clipflag.Flag
+		if cmd.flagSet.ShorthandLookup("h") == nil {
+			flag = clipflag.NewToggle("help", clipflag.WithShort("h"))
+		} else {
+			flag = clipflag.NewToggle("help")
+		}
+
+		WithActionFlag(flag, printCommandHelp)(cmd)
+	}
 }
 
 // AsHidden hides a command from documentation.
