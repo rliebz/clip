@@ -2,8 +2,8 @@ package clip
 
 import (
 	"fmt"
-	"html/template"
 	"io"
+	"text/template"
 )
 
 // newHelpContext creates a helpContext from a Context.
