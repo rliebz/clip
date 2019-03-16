@@ -6,7 +6,7 @@ import "github.com/spf13/pflag"
 // Toggle flags have no associated value, but can be passed like boolean flags
 // to toggle something on. This is the simplest way to create an action flag.
 func NewToggle(name string, options ...Option) *Flag {
-	f := newConfig(name, options...)
+	f := newFlag(name, options...)
 
 	f.define = func(fs *pflag.FlagSet) {
 		fs.Bool(name, false, f.summary)
@@ -21,7 +21,7 @@ func NewToggle(name string, options ...Option) *Flag {
 
 // NewBool creates a new boolean flag.
 func NewBool(value *bool, name string, options ...Option) *Flag {
-	f := newConfig(name, options...)
+	f := newFlag(name, options...)
 
 	f.define = func(fs *pflag.FlagSet) {
 		fs.BoolVar(value, name, *value, f.summary)
@@ -36,7 +36,7 @@ func NewBool(value *bool, name string, options ...Option) *Flag {
 
 // NewString creates a new string flag.
 func NewString(value *string, name string, options ...Option) *Flag {
-	f := newConfig(name, options...)
+	f := newFlag(name, options...)
 
 	f.define = func(fs *pflag.FlagSet) {
 		fs.StringVar(value, name, *value, f.summary)
@@ -61,7 +61,7 @@ type config struct {
 	hidden      bool
 }
 
-func newConfig(name string, options ...Option) Flag {
+func newFlag(name string, options ...Option) Flag {
 	c := config{}
 	for _, o := range options {
 		o(&c)
