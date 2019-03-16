@@ -15,9 +15,8 @@ import (
 // By default, commands will print their help documentation when invoked.
 // Different configuration options can be passed as a command is created, but
 // the command returned will be immutable.
-func NewCommand(name string, options ...func(*Command)) *Command {
-	cmd := Command{
-		name:          name,
+func NewCommand(name string, options ...Option) *Command {
+	c := config{
 		action:        printCommandHelp,
 		subCommandMap: map[string]*Command{},
 		writer:        os.Stdout,
@@ -25,77 +24,105 @@ func NewCommand(name string, options ...func(*Command)) *Command {
 		flagAction:    func(ctx *Context) (bool, error) { return false, nil },
 	}
 
-	cmd.flagSet.SetOutput(ioutil.Discard)
+	c.flagSet.SetOutput(ioutil.Discard)
 
 	// Overwrite defaults with passed options
 	for _, o := range options {
-		o(&cmd)
+		o(&c)
 	}
 
-	applyConditionalDefaults(&cmd)
+	applyConditionalDefaults(&c)
 
-	return &cmd
+	return &Command{
+		name:        name,
+		summary:     c.summary,
+		description: c.description,
+		hidden:      c.hidden,
+		action:      c.action,
+		writer:      c.writer,
+
+		flagSet:         c.flagSet,
+		visibleCommands: c.visibleCommands,
+		subCommandMap:   c.subCommandMap,
+		flagAction:      c.flagAction,
+	}
+}
+
+// An Option is used to configure a new command.
+type Option func(*config)
+
+type config struct {
+	summary     string
+	description string
+	hidden      bool
+	action      func(*Context) error
+	writer      io.Writer
+
+	flagSet         *pflag.FlagSet
+	visibleCommands []*Command
+	subCommandMap   map[string]*Command
+	flagAction      func(*Context) (wasSet bool, err error)
 }
 
 // applyConditionalDefaults applies any conditionally-applied defaults.
 // This includes things like a help or version flag that may not be applicable
 // depending on which options are passed.
-func applyConditionalDefaults(cmd *Command) {
-	if cmd.flagSet.Lookup("help") == nil {
+func applyConditionalDefaults(c *config) {
+	if c.flagSet.Lookup("help") == nil {
 		var flag *clipflag.Flag
-		if cmd.flagSet.ShorthandLookup("h") == nil {
+		if c.flagSet.ShorthandLookup("h") == nil {
 			flag = clipflag.NewToggle("help", clipflag.WithShort("h"))
 		} else {
 			flag = clipflag.NewToggle("help")
 		}
 
-		WithActionFlag(flag, printCommandHelp)(cmd)
+		WithActionFlag(flag, printCommandHelp)(c)
 	}
 }
 
 // AsHidden hides a command from documentation.
-func AsHidden(cmd *Command) {
-	cmd.hidden = true
+func AsHidden(c *config) {
+	c.hidden = true
 }
 
 // WithSummary adds a one-line description to a command.
-func WithSummary(summary string) func(*Command) {
-	return func(cmd *Command) {
-		cmd.summary = summary
+func WithSummary(summary string) Option {
+	return func(c *config) {
+		c.summary = summary
 	}
 }
 
 // WithDescription adds a multi-line description to a command.
-func WithDescription(description string) func(*Command) {
-	return func(cmd *Command) {
-		cmd.description = description
+func WithDescription(description string) Option {
+	return func(c *config) {
+		c.description = description
 	}
 }
 
 // WithAction sets a Command's behavior when invoked.
-func WithAction(action func(*Context) error) func(*Command) {
-	return func(cmd *Command) {
-		cmd.action = action
+func WithAction(action func(*Context) error) Option {
+	return func(c *config) {
+		c.action = action
 	}
 }
 
 // WithCommand adds a sub-command.
-func WithCommand(subCmd *Command) func(*Command) {
-	return func(cmd *Command) {
-		if _, exists := cmd.subCommandMap[subCmd.Name()]; exists {
+func WithCommand(subCmd *Command) Option {
+	return func(c *config) {
+		if _, exists := c.subCommandMap[subCmd.Name()]; exists {
 			panic(fmt.Sprintf("a sub-command with name %q already exists", subCmd.Name()))
 		}
-		cmd.subCommandMap[subCmd.Name()] = subCmd
+		c.subCommandMap[subCmd.Name()] = subCmd
 
 		if !subCmd.hidden {
-			cmd.visibleCommands = append(cmd.visibleCommands, subCmd)
+			c.visibleCommands = append(c.visibleCommands, subCmd)
 		}
 	}
 }
 
 // WithWriter sets the writer for writing output.
-func WithWriter(writer io.Writer) func(*Command) {
-	return func(cmd *Command) {
-		cmd.writer = writer
+func WithWriter(writer io.Writer) Option {
+	return func(c *config) {
+		c.writer = writer
 	}
 }

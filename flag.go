@@ -24,9 +24,9 @@ type Flag interface {
 
 // WithFlag adds a flag.
 // Typically, flags from the clipflag package will be passed here.
-func WithFlag(f Flag) func(*Command) {
-	return func(cmd *Command) {
-		f.Define(cmd.flagSet)
+func WithFlag(f Flag) Option {
+	return func(c *config) {
+		f.Define(c.flagSet)
 	}
 }
 
@@ -35,15 +35,15 @@ func WithFlag(f Flag) func(*Command) {
 //
 // The action will occur if the flag is passed, regardless of the value, so
 // typically clipflag.NewToggle will be used here.
-func WithActionFlag(f Flag, action func(*Context) error) func(*Command) {
-	return func(cmd *Command) {
-		oldAction := cmd.flagAction
-		f.Define(cmd.flagSet)
-		cmd.flagAction = func(ctx *Context) (bool, error) {
+func WithActionFlag(f Flag, action func(*Context) error) Option {
+	return func(c *config) {
+		oldAction := c.flagAction
+		f.Define(c.flagSet)
+		c.flagAction = func(ctx *Context) (bool, error) {
 			if wasSet, err := oldAction(ctx); wasSet {
 				return true, err
 			}
-			if cmd.flagSet.Changed(f.Name()) {
+			if c.flagSet.Changed(f.Name()) {
 				return true, action(ctx)
 			}
 			return false, nil
