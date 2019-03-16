@@ -46,9 +46,6 @@ func (cmd *Command) Writer() io.Writer { return cmd.writer }
 // VisibleCommands is the list of sub-commands in order.
 func (cmd *Command) VisibleCommands() []*Command { return cmd.visibleCommands }
 
-// FlagSet returns the flagset. TODO: Don't expose implementation detail
-func (cmd *Command) FlagSet() *pflag.FlagSet { return cmd.flagSet }
-
 // Execute runs a command using given args and returns the raw error.
 //
 // This function provides more fine-grained control than Run, and can be used
