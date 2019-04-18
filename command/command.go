@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/rliebz/clip"
 	"github.com/spf13/pflag"
 )
 
@@ -27,7 +28,7 @@ type Command struct {
 
 	flagSet         *pflag.FlagSet
 	visibleCommands []*Command
-	visibleFlags    []Flag
+	visibleFlags    []clip.Flag
 	subCommandMap   map[string]*Command
 	flagAction      func(*Context) (wasSet bool, err error)
 }
@@ -48,7 +49,7 @@ func (cmd *Command) Writer() io.Writer { return cmd.writer }
 func (cmd *Command) VisibleCommands() []*Command { return cmd.visibleCommands }
 
 // VisibleFlags is the list of flags in order.
-func (cmd *Command) VisibleFlags() []Flag { return cmd.visibleFlags }
+func (cmd *Command) VisibleFlags() []clip.Flag { return cmd.visibleFlags }
 
 // Execute runs a command using given args and returns the raw error.
 //

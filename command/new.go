@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/rliebz/clip"
 	"github.com/rliebz/clip/clipflag"
 	"github.com/spf13/pflag"
 )
@@ -61,7 +62,7 @@ type config struct {
 
 	flagSet         *pflag.FlagSet
 	visibleCommands []*Command
-	visibleFlags    []Flag
+	visibleFlags    []clip.Flag
 	subCommandMap   map[string]*Command
 	flagAction      func(*Context) (wasSet bool, err error)
 }

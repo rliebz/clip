@@ -4,28 +4,13 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/rliebz/clip"
 	"github.com/spf13/pflag"
 )
 
-// Flag is the interface for any flag.
-// Typically, this will be implemented by a flag from the clipflag package.
-type Flag interface {
-	Name() string
-	Short() string
-	Summary() string
-	Hidden() bool
-
-	// Define adds the flag to a given flagset.
-	// This method is invoked when creating a new command before the flags are
-	// parsed.
-	//
-	// TODO: Replace pflag.FlagSet with an interface
-	Define(*pflag.FlagSet)
-}
-
 // WithFlag adds a flag.
 // Typically, flags from the clipflag package will be passed here.
-func WithFlag(f Flag) Option {
+func WithFlag(f clip.Flag) Option {
 	return func(c *config) {
 		f.Define(c.flagSet)
 		if !f.Hidden() {
@@ -39,7 +24,7 @@ func WithFlag(f Flag) Option {
 //
 // The action will occur if the flag is passed, regardless of the value, so
 // typically clipflag.NewToggle will be used here.
-func WithActionFlag(f Flag, action func(*Context) error) Option {
+func WithActionFlag(f clip.Flag, action func(*Context) error) Option {
 	return func(c *config) {
 		oldAction := c.flagAction
 		f.Define(c.flagSet)

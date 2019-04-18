@@ -7,6 +7,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/rliebz/clip"
 	"github.com/rliebz/clip/clipflag"
 	"gotest.tools/assert"
 	"gotest.tools/assert/cmp"
@@ -60,7 +61,7 @@ func TestCommandDefaultHelpFlag(t *testing.T) {
 	)
 
 	testCases := []struct {
-		flag     Flag
+		flag     clip.Flag
 		passed   string
 		behavior int
 	}{
