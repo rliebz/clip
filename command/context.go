@@ -1,4 +1,4 @@
-package clip
+package command
 
 // Context is a command context with runtime metadata.
 type Context struct {

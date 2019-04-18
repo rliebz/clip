@@ -1,4 +1,4 @@
-package clip
+package command
 
 import (
 	"errors"
@@ -12,10 +12,10 @@ import (
 // Command is a command or sub-command that can be run from the command-line.
 //
 // To create a new command with the default settings, use:
-//  clip.NewCommand("command-name")
+//  command.New("command-name")
 // rather than:
-//  clip.Command{}
-// The command type is immutable once created, so passing options to NewCommand
+//  command.Command{}
+// The command type is immutable once created, so passing options to New
 // is the only way to configure a command.
 type Command struct {
 	name        string

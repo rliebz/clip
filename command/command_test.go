@@ -1,4 +1,4 @@
-package clip
+package command
 
 import (
 	"bytes"
@@ -14,32 +14,32 @@ import (
 
 func TestCommandName(t *testing.T) {
 	name := "foo"
-	command := NewCommand("foo")
+	command := New("foo")
 	assert.Equal(t, command.Name(), name)
 }
 
 func TestCommandSummary(t *testing.T) {
 	summary := "some summary"
-	command := NewCommand("foo", WithSummary(summary))
+	command := New("foo", WithSummary(summary))
 	assert.Equal(t, command.Summary(), summary)
 }
 
 func TestCommandDescription(t *testing.T) {
 	description := "some description"
-	command := NewCommand("foo", WithDescription(description))
+	command := New("foo", WithDescription(description))
 	assert.Equal(t, command.Description(), description)
 }
 
 func TestCommandWriter(t *testing.T) {
 	writer := new(bytes.Buffer)
-	command := NewCommand("foo", WithWriter(writer))
+	command := New("foo", WithWriter(writer))
 	assert.Equal(t, command.Writer(), writer)
 }
 
 func TestCommandExecuteHelp(t *testing.T) {
 	cmdName := "foo"
 	output := new(bytes.Buffer)
-	command := NewCommand(
+	command := New(
 		cmdName,
 		WithSummary("some summary"),
 		WithDescription("some description"),
@@ -83,7 +83,7 @@ func TestCommandDefaultHelpFlag(t *testing.T) {
 				cmdName := "foo"
 				output := new(bytes.Buffer)
 				flagActionCalled := false
-				command := NewCommand(
+				command := New(
 					cmdName,
 					WithActionFlag(
 						tt.flag,
@@ -119,7 +119,7 @@ func TestCommandAction(t *testing.T) {
 		return nil
 	}
 
-	command := NewCommand("foo", WithAction(action))
+	command := New("foo", WithAction(action))
 
 	assert.Check(t, !wasCalled)
 	assert.NilError(t, command.Execute([]string{command.Name()}))
@@ -135,7 +135,7 @@ func TestCommandActionError(t *testing.T) {
 		return err
 	}
 
-	command := NewCommand("foo", WithAction(action))
+	command := New("foo", WithAction(action))
 
 	assert.Check(t, !wasCalled)
 	assert.Error(t, command.Execute([]string{command.Name()}), err.Error())
@@ -151,7 +151,7 @@ func TestCommandFlagAction(t *testing.T) {
 	flagValue := false
 	flag := clipflag.NewBool(&flagValue, "my-flag")
 
-	command := NewCommand("foo", WithActionFlag(flag, action))
+	command := New("foo", WithActionFlag(flag, action))
 
 	assert.Check(t, !wasCalled)
 	assert.Check(t, !flagValue)
@@ -179,9 +179,9 @@ func TestCommandFlagCorrectAction(t *testing.T) {
 	secondValue := false
 	secondFlag := clipflag.NewBool(&secondValue, "second-flag")
 
-	subCommand := NewCommand("bar", WithAction(wrongAction))
+	subCommand := New("bar", WithAction(wrongAction))
 
-	command := NewCommand(
+	command := New(
 		"foo",
 		WithCommand(subCommand),
 		WithActionFlag(notCalledFlag, wrongAction),
@@ -209,7 +209,7 @@ func TestCommandFlagActionError(t *testing.T) {
 	flagValue := false
 	flag := clipflag.NewBool(&flagValue, "my-flag")
 
-	command := NewCommand("foo", WithActionFlag(flag, action))
+	command := New("foo", WithActionFlag(flag, action))
 
 	assert.Check(t, !wasCalled)
 	assert.Check(t, !flagValue)
@@ -229,7 +229,7 @@ func TestCommandArgs(t *testing.T) {
 		return nil
 	}
 
-	command := NewCommand(
+	command := New(
 		cmdName,
 		WithAction(action),
 	)
@@ -252,7 +252,7 @@ func TestSubCommandArgs(t *testing.T) {
 	}
 	defer func() { assert.Check(t, subCmdWasCalled) }()
 
-	subCommand := NewCommand(
+	subCommand := New(
 		subCmdName,
 		WithAction(subCmdAction),
 	)
@@ -264,7 +264,7 @@ func TestSubCommandArgs(t *testing.T) {
 	}
 	defer func() { assert.Check(t, !cmdWasCalled) }()
 
-	command := NewCommand(
+	command := New(
 		cmdName,
 		WithAction(cmdAction),
 		WithCommand(subCommand),
@@ -276,16 +276,16 @@ func TestSubCommandArgs(t *testing.T) {
 
 func TestSubCommandDuplicates(t *testing.T) {
 	assert.Assert(t, cmp.Panics(func() {
-		NewCommand(
+		New(
 			"foo",
-			WithCommand(NewCommand("bar")),
-			WithCommand(NewCommand("bar")),
+			WithCommand(New("bar")),
+			WithCommand(New("bar")),
 		)
 	}))
 }
 
 func TestCommandNoArgs(t *testing.T) {
-	command := NewCommand("foo")
+	command := New("foo")
 	assert.Error(t, command.Execute([]string{}), "no arguments were passed")
 }
 
@@ -303,8 +303,8 @@ func TestCommandNoSubCommands(t *testing.T) {
 		return nil
 	}
 
-	child := NewCommand("foo")
-	parent := NewCommand(cmdName, WithCommand(child))
+	child := New("foo")
+	parent := New(cmdName, WithCommand(child))
 
 	args := []string{parent.Name()}
 	assert.NilError(t, parent.Execute(args))
@@ -312,8 +312,8 @@ func TestCommandNoSubCommands(t *testing.T) {
 }
 
 func TestCommandNonExistentSubCommand(t *testing.T) {
-	command := NewCommand("foo")
-	parent := NewCommand("bar", WithCommand(command))
+	command := New("foo")
+	parent := New("bar", WithCommand(command))
 	assert.Error(
 		t,
 		parent.Execute([]string{parent.Name(), "wrong"}),
@@ -325,7 +325,7 @@ func TestRun(t *testing.T) {
 	defer func(args []string) { os.Args = args }(os.Args)
 	os.Args = []string{"foo"}
 	buf := new(bytes.Buffer)
-	command := NewCommand(
+	command := New(
 		"foo",
 		WithAction(func(ctx *Context) error { return nil }),
 		WithWriter(buf),
@@ -340,7 +340,7 @@ func TestRunError(t *testing.T) {
 	os.Args = []string{"foo"}
 	err := errors.New("oops")
 	buf := new(bytes.Buffer)
-	command := NewCommand(
+	command := New(
 		"foo",
 		WithAction(func(ctx *Context) error { return err }),
 		WithWriter(buf),
@@ -355,7 +355,7 @@ func TestRunExitError(t *testing.T) {
 	os.Args = []string{"foo"}
 	err := NewError("oops", 3).(exitError)
 	buf := new(bytes.Buffer)
-	command := NewCommand(
+	command := New(
 		"foo",
 		WithAction(func(ctx *Context) error { return err }),
 		WithWriter(buf),
@@ -370,7 +370,7 @@ func TestRunUsageError(t *testing.T) {
 	os.Args = []string{"foo"}
 	errMessage := "oops"
 	buf := new(bytes.Buffer)
-	command := NewCommand(
+	command := New(
 		"foo",
 		WithAction(func(ctx *Context) error {
 			return newUsageError(ctx, errMessage)

@@ -1,4 +1,4 @@
-package clip
+package command
 
 import (
 	"fmt"
@@ -112,7 +112,7 @@ func TestParse(t *testing.T) {
 			childFlag := false
 			childSFlag := ""
 			childCalled := false
-			child := NewCommand(
+			child := New(
 				"child",
 				WithFlag(clipflag.NewString(&childSFlag, "sflag", clipflag.WithShort("s"))),
 				WithFlag(clipflag.NewBool(&childFlag, "flag", clipflag.WithShort("f"))),
@@ -125,7 +125,7 @@ func TestParse(t *testing.T) {
 			parentFlag := false
 			parentSFlag := ""
 			parentCalled := false
-			cmd := NewCommand(
+			cmd := New(
 				"foo",
 				WithFlag(clipflag.NewString(&parentSFlag, "sflag", clipflag.WithShort("s"))),
 				WithFlag(clipflag.NewBool(&parentFlag, "flag", clipflag.WithShort("f"))),
@@ -188,7 +188,7 @@ func TestParseError(t *testing.T) {
 		t.Run(fmt.Sprintf("args: %v", tt.args), func(t *testing.T) {
 			childFlag := false
 			childCalled := false
-			child := NewCommand(
+			child := New(
 				"child",
 				WithFlag(clipflag.NewBool(&childFlag, "flag")),
 				WithAction(func(ctx *Context) error {
@@ -199,7 +199,7 @@ func TestParseError(t *testing.T) {
 
 			parentFlag := false
 			parentCalled := false
-			cmd := NewCommand(
+			cmd := New(
 				"foo",
 				WithFlag(clipflag.NewBool(&parentFlag, "flag")),
 				WithCommand(child),

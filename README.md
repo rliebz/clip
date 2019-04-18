@@ -17,12 +17,14 @@ import (
   "log"
   "os"
 
-  "github.com/rliebz/clip"
+  "github.com/rliebz/clip/cliparg"
+  "github.com/rliebz/clip/clipflag"
+  "github.com/rliebz/clip/command"
 )
 
 func main() {
   // Create a command-line application
-  app := clip.NewCommand("my-app")
+  app := command.New("my-app")
 
   // Run it
   os.Exit(app.Run())
@@ -41,14 +43,14 @@ Options:
 
 Of course, since our app doesn't do anything, the help documentation isn't very
 useful. Commands can be configured by passing a list of functional options,
-such as `clip.WithSummary` for a one-line summary, or `clip.WithDescription`
+such as `command.WithSummary` for a one-line summary, or `command.WithDescription`
 for a slightly longer description:
 
 ```go
-app := clip.NewCommand(
+app := command.New(
   "my-app",
-  clip.WithSummary("A command-line application"),
-  clip.WithDescription(`This is a simple "Hello World" demo application.`),
+  command.WithSummary("A command-line application"),
+  command.WithDescription(`This is a simple "Hello World" demo application.`),
 )
 
 os.Exit(app.Run())
@@ -72,21 +74,21 @@ commands before their parent commands:
 
 ```go
 // Define a sub-command "hello"
-hello := clip.NewCommand(
+hello := command.New(
   "hello",
-  clip.WithSummary("Greet the world"),
-  clip.WithAction(func(ctx *clip.Context) error {
+  command.WithSummary("Greet the world"),
+  command.WithAction(func(ctx *command.Context) error {
     fmt.Println("Hello, world!")
     return nil
   }),
 )
 
 // Create a root command "my-app"
-app := clip.NewCommand(
+app := command.New(
   "my-app",
-  clip.WithSummary("A command-line application"),
-  clip.WithDescription(`This is a simple "Hello World" demo application.`),
-  clip.WithCommand(hello),
+  command.WithSummary("A command-line application"),
+  command.WithDescription(`This is a simple "Hello World" demo application.`),
+  command.WithCommand(hello),
 )
 
 // Run it
@@ -126,9 +128,9 @@ Hello, world!
 By default, arguments are available as a slice from an action's context:
 
 ```go
-hello := clip.NewCommand(
+hello := command.New(
   "hello",
-  clip.WithAction(func (ctx *Context) error {
+  command.WithAction(func (ctx *command.Context) error {
     fmt.Println("Args: ", ctx.Args())
     return nil
   }),
@@ -137,14 +139,14 @@ hello := clip.NewCommand(
 
 Generally, however, it is better to explicitly define the arguments. This gives
 the benefit of documentation, validation, and tab-completion and can be done using
-`clip.WithArg` and the `cliparg` package:
+`command.WithArg` and the `cliparg` package:
 
 ```go
 name := "World"
-hello := clip.NewCommand(
+hello := command.New(
   "hello",
-  clip.WithSummary("Greet the world"),
-  clip.WithArg(
+  command.WithSummary("Greet the world"),
+  command.WithArg(
     cliparg.New(
       &name,
       "name",
@@ -153,7 +155,7 @@ hello := clip.NewCommand(
       cliparg.WithValues([]string{"Alice", "Bruce", "Carl"}),
     ),
   ),
-  clip.WithAction(func(ctx *clip.Context) error {
+  command.WithAction(func(ctx *command.Context) error {
     greeting := fmt.Sprintf("Hello, %s\n", name)
     fmt.Println(greeting)
     return nil
@@ -188,21 +190,21 @@ Error: argument "Alex" must be one of: Alice, Bruce, Carl
 ### Flags
 
 The `-h`/`--help` flag is defined by default, but more can be created using
-`clip.WithFlag`/`clip.WithActionFlag` and the `clipflag` package.
+`command.WithFlag`/`command.WithActionFlag` and the `clipflag` package.
 
 To create a flag that prints the version and exits, use an action flag:
 
 ```go
 version := "v0.1.0"
-app := clip.NewCommand(
+app := command.New(
   "app",
-  clip.WithActionFlag(
+  command.WithActionFlag(
     clipflag.NewToggle(
       "version",
       clipflag.WithShort("V"),
       clipflag.WithSummary("Print the version and exit"),
     ),
-    func(ctx *clip.Context) error {
+    func(ctx *command.Context) error {
       fmt.Println(version)
       return nil
     },
@@ -212,16 +214,16 @@ app := clip.NewCommand(
 
 ```go
 loud := false
-hello := clip.NewCommand(
+hello := command.New(
   "hello",
-  clip.WithFlag(
+  command.WithFlag(
     clipflag.NewBool(
       &loud,
       "loud",
       clipflag.WithSummary("Whether to pump up the volume to max"),
     ),
   ),
-  clip.WithAction(func(ctx *clip.Context) error {
+  command.WithAction(func(ctx *command.Context) error {
     if loud {
       fmt.Println("HELLO, WORLD!!!")
     } else {

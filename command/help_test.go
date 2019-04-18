@@ -1,4 +1,4 @@
-package clip
+package command
 
 import (
 	"bytes"
@@ -21,9 +21,9 @@ func TestHelpContextFullName(t *testing.T) {
 		return nil
 	}
 
-	grandchild := NewCommand("grandchild", WithAction(action))
-	child := NewCommand("child", WithCommand(grandchild))
-	root := NewCommand("root", WithCommand(child))
+	grandchild := New("grandchild", WithAction(action))
+	child := New("child", WithCommand(grandchild))
+	root := New("root", WithCommand(child))
 
 	args := []string{root.Name(), child.Name(), grandchild.Name()}
 	assert.NilError(t, root.Execute(args))
@@ -33,12 +33,12 @@ func TestHelpContextFullName(t *testing.T) {
 
 func TestHelpCommands(t *testing.T) {
 	buf := new(bytes.Buffer)
-	root := NewCommand(
+	root := New(
 		"root",
 		WithWriter(buf),
-		WithCommand(NewCommand("child-one", WithSummary("1"))),
-		WithCommand(NewCommand("child-two", WithSummary("2"))),
-		WithCommand(NewCommand("child-three", WithSummary("3"))),
+		WithCommand(New("child-one", WithSummary("1"))),
+		WithCommand(New("child-two", WithSummary("2"))),
+		WithCommand(New("child-three", WithSummary("3"))),
 	)
 
 	args := []string{root.Name()}
@@ -52,11 +52,11 @@ func TestHelpCommands(t *testing.T) {
 
 func TestHidden(t *testing.T) {
 	buf := new(bytes.Buffer)
-	root := NewCommand(
+	root := New(
 		"root",
 		WithWriter(buf),
-		WithCommand(NewCommand("visible")),
-		WithCommand(NewCommand("hidden", AsHidden)),
+		WithCommand(New("visible")),
+		WithCommand(New("hidden", AsHidden)),
 	)
 
 	args := []string{root.Name()}
@@ -69,7 +69,7 @@ func TestHidden(t *testing.T) {
 
 func TestHiddenFlags(t *testing.T) {
 	buf := new(bytes.Buffer)
-	root := NewCommand(
+	root := New(
 		"root",
 		WithWriter(buf),
 		WithFlag(clipflag.NewToggle("visible")),

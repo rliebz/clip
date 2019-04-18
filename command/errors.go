@@ -1,4 +1,4 @@
-package clip
+package command
 
 import (
 	"bytes"

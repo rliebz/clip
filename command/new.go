@@ -1,4 +1,4 @@
-package clip
+package command
 
 import (
 	"fmt"
@@ -10,12 +10,12 @@ import (
 	"github.com/spf13/pflag"
 )
 
-// NewCommand creates a new command given a name and command options.
+// New creates a new command given a name and command options.
 //
 // By default, commands will print their help documentation when invoked.
 // Different configuration options can be passed as a command is created, but
 // the command returned will be immutable.
-func NewCommand(name string, options ...Option) *Command {
+func New(name string, options ...Option) *Command {
 	c := config{
 		action:        printCommandHelp,
 		subCommandMap: map[string]*Command{},
