@@ -43,6 +43,7 @@ func NewCommand(name string, options ...Option) *Command {
 
 		flagSet:         c.flagSet,
 		visibleCommands: c.visibleCommands,
+		visibleFlags:    c.visibleFlags,
 		subCommandMap:   c.subCommandMap,
 		flagAction:      c.flagAction,
 	}
@@ -60,6 +61,7 @@ type config struct {
 
 	flagSet         *pflag.FlagSet
 	visibleCommands []*Command
+	visibleFlags    []Flag
 	subCommandMap   map[string]*Command
 	flagAction      func(*Context) (wasSet bool, err error)
 }
@@ -69,13 +71,14 @@ type config struct {
 // depending on which options are passed.
 func applyConditionalDefaults(c *config) {
 	if c.flagSet.Lookup("help") == nil {
-		var flag *clipflag.Flag
+		options := []clipflag.Option{
+			clipflag.WithSummary("Print help and exit"),
+		}
 		if c.flagSet.ShorthandLookup("h") == nil {
-			flag = clipflag.NewToggle("help", clipflag.WithShort("h"))
-		} else {
-			flag = clipflag.NewToggle("help")
+			options = append(options, clipflag.WithShort("h"))
 		}
 
+		flag := clipflag.NewToggle("help", options...)
 		WithActionFlag(flag, printCommandHelp)(c)
 	}
 }

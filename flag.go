@@ -13,6 +13,7 @@ type Flag interface {
 	Name() string
 	Short() string
 	Summary() string
+	Hidden() bool
 
 	// Define adds the flag to a given flagset.
 	// This method is invoked when creating a new command before the flags are
@@ -27,6 +28,9 @@ type Flag interface {
 func WithFlag(f Flag) Option {
 	return func(c *config) {
 		f.Define(c.flagSet)
+		if !f.Hidden() {
+			c.visibleFlags = append(c.visibleFlags, f)
+		}
 	}
 }
 
@@ -39,6 +43,9 @@ func WithActionFlag(f Flag, action func(*Context) error) Option {
 	return func(c *config) {
 		oldAction := c.flagAction
 		f.Define(c.flagSet)
+		if !f.Hidden() {
+			c.visibleFlags = append(c.visibleFlags, f)
+		}
 		c.flagAction = func(ctx *Context) (bool, error) {
 			if wasSet, err := oldAction(ctx); wasSet {
 				return true, err

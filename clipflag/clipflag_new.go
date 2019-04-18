@@ -78,6 +78,11 @@ func newFlag(name string, options ...Option) Flag {
 	}
 }
 
+// AsHidden prevents the flag from being shown.
+func AsHidden(c *config) {
+	c.hidden = true
+}
+
 // WithShort adds a short name to a flag.
 // Panics if the name is not exactly one ASCII character.
 func WithShort(name string) Option {

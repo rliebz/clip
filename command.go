@@ -27,6 +27,7 @@ type Command struct {
 
 	flagSet         *pflag.FlagSet
 	visibleCommands []*Command
+	visibleFlags    []Flag
 	subCommandMap   map[string]*Command
 	flagAction      func(*Context) (wasSet bool, err error)
 }
@@ -45,6 +46,9 @@ func (cmd *Command) Writer() io.Writer { return cmd.writer }
 
 // VisibleCommands is the list of sub-commands in order.
 func (cmd *Command) VisibleCommands() []*Command { return cmd.visibleCommands }
+
+// VisibleFlags is the list of flags in order.
+func (cmd *Command) VisibleFlags() []Flag { return cmd.visibleFlags }
 
 // Execute runs a command using given args and returns the raw error.
 //

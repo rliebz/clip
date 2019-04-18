@@ -7,6 +7,8 @@ import (
 
 	"gotest.tools/assert"
 	"gotest.tools/assert/cmp"
+
+	"github.com/rliebz/clip/clipflag"
 )
 
 func TestHelpContextFullName(t *testing.T) {
@@ -55,6 +57,23 @@ func TestHidden(t *testing.T) {
 		WithWriter(buf),
 		WithCommand(NewCommand("visible")),
 		WithCommand(NewCommand("hidden", AsHidden)),
+	)
+
+	args := []string{root.Name()}
+	assert.NilError(t, root.Execute(args))
+
+	output := buf.String()
+	assert.Check(t, cmp.Contains(output, "visible"))
+	assert.Check(t, !strings.Contains(output, "hidden"))
+}
+
+func TestHiddenFlags(t *testing.T) {
+	buf := new(bytes.Buffer)
+	root := NewCommand(
+		"root",
+		WithWriter(buf),
+		WithFlag(clipflag.NewToggle("visible")),
+		WithFlag(clipflag.NewToggle("hidden", clipflag.AsHidden)),
 	)
 
 	args := []string{root.Name()}

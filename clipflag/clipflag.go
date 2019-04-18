@@ -8,13 +8,13 @@ type Flag struct {
 	short       string
 	summary     string
 	description string
+	hidden      bool
 	define      func(*pflag.FlagSet)
 	defineShort func(*pflag.FlagSet)
 
 	// TODO: These
 	envVar     string // nolint
 	deprecated bool   // nolint
-	hidden     bool   // nolint
 }
 
 // Name returns the name of the flag.
@@ -28,6 +28,9 @@ func (f *Flag) Summary() string { return f.summary }
 
 // Description returns a multi-line description of the command.
 func (f *Flag) Description() string { return f.description }
+
+// Hidden returns whether a flag should be hidden from help and tab completion.
+func (f *Flag) Hidden() bool { return f.hidden }
 
 // Define attaches a flag to a flagset.
 func (f *Flag) Define(fs *pflag.FlagSet) {
