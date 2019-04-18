@@ -9,10 +9,6 @@ func NewToggle(name string, options ...Option) *Flag {
 	f := newFlag(name, options...)
 
 	f.define = func(fs *pflag.FlagSet) {
-		fs.Bool(name, false, f.summary)
-	}
-
-	f.defineShort = func(fs *pflag.FlagSet) {
 		fs.BoolP(name, f.short, false, f.summary)
 	}
 
@@ -24,10 +20,6 @@ func NewBool(value *bool, name string, options ...Option) *Flag {
 	f := newFlag(name, options...)
 
 	f.define = func(fs *pflag.FlagSet) {
-		fs.BoolVar(value, name, *value, f.summary)
-	}
-
-	f.defineShort = func(fs *pflag.FlagSet) {
 		fs.BoolVarP(value, name, f.short, *value, f.summary)
 	}
 
@@ -39,10 +31,6 @@ func NewString(value *string, name string, options ...Option) *Flag {
 	f := newFlag(name, options...)
 
 	f.define = func(fs *pflag.FlagSet) {
-		fs.StringVar(value, name, *value, f.summary)
-	}
-
-	f.defineShort = func(fs *pflag.FlagSet) {
 		fs.StringVarP(value, name, f.short, *value, f.summary)
 	}
 

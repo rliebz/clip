@@ -10,7 +10,6 @@ type Flag struct {
 	description string
 	hidden      bool
 	define      func(*pflag.FlagSet)
-	defineShort func(*pflag.FlagSet)
 
 	// TODO: These
 	envVar     string // nolint
@@ -34,9 +33,5 @@ func (f *Flag) Hidden() bool { return f.hidden }
 
 // Define attaches a flag to a flagset.
 func (f *Flag) Define(fs *pflag.FlagSet) {
-	if f.short == "" {
-		f.define(fs)
-	} else {
-		f.defineShort(fs)
-	}
+	f.define(fs)
 }
