@@ -21,8 +21,7 @@ tasks:
       opts:
         private: true
         default:
-          when:
-            equal: {fast: true}
+          when: fast
           value: --fast
     run: golangci-lint run ${opts} ./...
 
@@ -46,14 +45,12 @@ tasks:
       verbose-string:
         private: true
         default:
-          when:
-            equal: {verbose: true}
+          when: verbose
           value: -v
       short-string:
         private: true
         default:
-          when:
-            equal: {fast: true}
+          when: fast
           value: -short
     run:
       - when:
