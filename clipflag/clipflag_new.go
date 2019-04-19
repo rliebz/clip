@@ -1,6 +1,6 @@
 package clipflag
 
-import "github.com/spf13/pflag"
+import "github.com/rliebz/clip"
 
 // NewToggle creates a new toggle flag.
 // Toggle flags have no associated value, but can be passed like boolean flags
@@ -8,8 +8,9 @@ import "github.com/spf13/pflag"
 func NewToggle(name string, options ...Option) *Flag {
 	f := newFlag(name, options...)
 
-	f.define = func(fs *pflag.FlagSet) {
-		fs.BoolP(name, f.short, false, f.summary)
+	f.define = func(fs clip.FlagSet) {
+		p := new(bool)
+		fs.BoolVarP(p, name, f.short, false, f.summary)
 	}
 
 	return &f
@@ -19,7 +20,7 @@ func NewToggle(name string, options ...Option) *Flag {
 func NewBool(value *bool, name string, options ...Option) *Flag {
 	f := newFlag(name, options...)
 
-	f.define = func(fs *pflag.FlagSet) {
+	f.define = func(fs clip.FlagSet) {
 		fs.BoolVarP(value, name, f.short, *value, f.summary)
 	}
 
@@ -30,7 +31,7 @@ func NewBool(value *bool, name string, options ...Option) *Flag {
 func NewString(value *string, name string, options ...Option) *Flag {
 	f := newFlag(name, options...)
 
-	f.define = func(fs *pflag.FlagSet) {
+	f.define = func(fs clip.FlagSet) {
 		fs.StringVarP(value, name, f.short, *value, f.summary)
 	}
 

@@ -1,6 +1,8 @@
 package clipflag
 
-import "github.com/spf13/pflag"
+import (
+	"github.com/rliebz/clip"
+)
 
 // Flag is an immutable command-line flag.
 type Flag struct {
@@ -9,7 +11,7 @@ type Flag struct {
 	summary     string
 	description string
 	hidden      bool
-	define      func(*pflag.FlagSet)
+	define      func(clip.FlagSet)
 
 	// TODO: These
 	envVar     string // nolint
@@ -32,6 +34,6 @@ func (f *Flag) Description() string { return f.description }
 func (f *Flag) Hidden() bool { return f.hidden }
 
 // Define attaches a flag to a flagset.
-func (f *Flag) Define(fs *pflag.FlagSet) {
+func (f *Flag) Define(fs clip.FlagSet) {
 	f.define(fs)
 }
