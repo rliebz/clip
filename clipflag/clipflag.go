@@ -18,6 +18,8 @@ type Flag struct {
 	deprecated bool   // nolint
 }
 
+var _ clip.Flag = (*Flag)(nil)
+
 // Name returns the name of the flag.
 func (f *Flag) Name() string { return f.name }
 

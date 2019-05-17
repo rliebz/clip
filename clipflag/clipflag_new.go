@@ -10,7 +10,7 @@ func NewToggle(name string, options ...Option) *Flag {
 
 	f.define = func(fs clip.FlagSet) {
 		p := new(bool)
-		fs.BoolVarP(p, name, f.short, false, f.summary)
+		fs.DefineBool(p, name, f.short, false, f.summary)
 	}
 
 	return &f
@@ -21,7 +21,7 @@ func NewBool(value *bool, name string, options ...Option) *Flag {
 	f := newFlag(name, options...)
 
 	f.define = func(fs clip.FlagSet) {
-		fs.BoolVarP(value, name, f.short, *value, f.summary)
+		fs.DefineBool(value, name, f.short, *value, f.summary)
 	}
 
 	return &f
@@ -32,7 +32,7 @@ func NewString(value *string, name string, options ...Option) *Flag {
 	f := newFlag(name, options...)
 
 	f.define = func(fs clip.FlagSet) {
-		fs.StringVarP(value, name, f.short, *value, f.summary)
+		fs.DefineString(value, name, f.short, *value, f.summary)
 	}
 
 	return &f

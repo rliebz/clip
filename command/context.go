@@ -4,12 +4,13 @@ package command
 type Context struct {
 	*Command
 
-	args   []string
 	parent *Context
 }
 
 // Args returns the list of arguments.
-func (ctx *Context) Args() []string { return ctx.args }
+func (ctx *Context) Args() []string {
+	return ctx.flagSet.Args()
+}
 
 // Parent is the context's parent context.
 func (ctx *Context) Parent() *Context { return ctx.parent }
@@ -25,10 +26,9 @@ func (ctx *Context) Root() *Context {
 
 // run runs the command with a given context.
 func (ctx *Context) run(args []string) error {
-	if err := parse(ctx, args[1:]); err != nil {
+	if err := ctx.flagSet.Parse(args[1:]); err != nil {
 		return newUsageError(ctx, err.Error())
 	}
-	ctx.args = ctx.flagSet.Args()
 
 	// Flag actions
 	if wasSet, err := ctx.flagAction(ctx); wasSet {
@@ -36,18 +36,18 @@ func (ctx *Context) run(args []string) error {
 	}
 
 	// No sub commands or command action
-	if len(ctx.subCommandMap) == 0 || len(ctx.args) == 0 {
+	if len(ctx.subCommandMap) == 0 || len(ctx.Args()) == 0 {
 		return ctx.action(ctx)
 	}
 
 	// Sub commands, something passed
-	subCmdName := ctx.args[0]
+	subCmdName := ctx.Args()[0]
 	if subCmd, ok := ctx.subCommandMap[subCmdName]; ok {
 		subCtx := Context{
 			Command: subCmd,
 			parent:  ctx,
 		}
-		return subCtx.run(ctx.args)
+		return subCtx.run(ctx.Args())
 	}
 
 	return newUsageErrorf(ctx, "undefined sub-command: %s", subCmdName)

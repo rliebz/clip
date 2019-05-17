@@ -15,8 +15,13 @@ type Flag interface {
 }
 
 // FlagSet is the interface for a set of flags.
-// Typically, this will be implemented by github.com/spf13/pflag.
+// Typically, this will be implemented by clipflag.
 type FlagSet interface {
-	BoolVarP(p *bool, name string, short string, value bool, usage string)
-	StringVarP(p *string, name string, short string, value string, usage string)
+	Args() []string
+	Changed(name string) bool
+	DefineBool(p *bool, name string, short string, value bool, usage string)
+	DefineString(p *string, name string, short string, value string, usage string)
+	Has(name string) bool
+	HasShort(name string) bool
+	Parse(args []string) error
 }

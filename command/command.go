@@ -7,7 +7,6 @@ import (
 	"os"
 
 	"github.com/rliebz/clip"
-	"github.com/spf13/pflag"
 )
 
 // Command is a command or sub-command that can be run from the command-line.
@@ -26,7 +25,7 @@ type Command struct {
 	action      func(*Context) error
 	writer      io.Writer
 
-	flagSet         *pflag.FlagSet
+	flagSet         clip.FlagSet
 	visibleCommands []*Command
 	visibleFlags    []clip.Flag
 	subCommandMap   map[string]*Command

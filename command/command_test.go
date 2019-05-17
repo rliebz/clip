@@ -226,7 +226,7 @@ func TestCommandArgs(t *testing.T) {
 	wasCalled := false
 	action := func(ctx *Context) error {
 		wasCalled = true
-		assert.DeepEqual(t, ctx.args, args)
+		assert.Check(t, cmp.DeepEqual(args, ctx.Args()))
 		return nil
 	}
 
@@ -248,7 +248,7 @@ func TestSubCommandArgs(t *testing.T) {
 	subCmdWasCalled := false
 	subCmdAction := func(ctx *Context) error {
 		subCmdWasCalled = true
-		assert.DeepEqual(t, ctx.args, args)
+		assert.Check(t, cmp.DeepEqual(args, ctx.Args()))
 		return nil
 	}
 	defer func() { assert.Check(t, subCmdWasCalled) }()

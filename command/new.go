@@ -3,12 +3,10 @@ package command
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 
 	"github.com/rliebz/clip"
 	"github.com/rliebz/clip/clipflag"
-	"github.com/spf13/pflag"
 )
 
 // New creates a new command given a name and command options.
@@ -21,11 +19,9 @@ func New(name string, options ...Option) *Command {
 		action:        printCommandHelp,
 		subCommandMap: map[string]*Command{},
 		writer:        os.Stdout,
-		flagSet:       pflag.NewFlagSet(name, pflag.ContinueOnError),
+		flagSet:       clipflag.NewFlagSet(name),
 		flagAction:    func(ctx *Context) (bool, error) { return false, nil },
 	}
-
-	c.flagSet.SetOutput(ioutil.Discard)
 
 	// Overwrite defaults with passed options
 	for _, o := range options {
@@ -60,7 +56,7 @@ type config struct {
 	action      func(*Context) error
 	writer      io.Writer
 
-	flagSet         *pflag.FlagSet
+	flagSet         clip.FlagSet
 	visibleCommands []*Command
 	visibleFlags    []clip.Flag
 	subCommandMap   map[string]*Command
@@ -71,11 +67,11 @@ type config struct {
 // This includes things like a help or version flag that may not be applicable
 // depending on which options are passed.
 func applyConditionalDefaults(c *config) {
-	if c.flagSet.Lookup("help") == nil {
+	if !c.flagSet.Has("help") {
 		options := []clipflag.Option{
 			clipflag.WithSummary("Print help and exit"),
 		}
-		if c.flagSet.ShorthandLookup("h") == nil {
+		if !c.flagSet.HasShort("h") {
 			options = append(options, clipflag.WithShort("h"))
 		}
 
