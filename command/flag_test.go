@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/rliebz/clip/clipflag"
+	"github.com/rliebz/clip/flag"
 	"gotest.tools/assert"
 	"gotest.tools/assert/cmp"
 )
@@ -114,8 +114,8 @@ func TestParse(t *testing.T) {
 			childCalled := false
 			child := New(
 				"child",
-				WithFlag(clipflag.NewString(&childSFlag, "sflag", clipflag.WithShort("s"))),
-				WithFlag(clipflag.NewBool(&childFlag, "flag", clipflag.WithShort("f"))),
+				WithFlag(flag.NewString(&childSFlag, "sflag", flag.WithShort("s"))),
+				WithFlag(flag.NewBool(&childFlag, "flag", flag.WithShort("f"))),
 				WithAction(func(ctx *Context) error {
 					childCalled = true
 					return nil
@@ -127,8 +127,8 @@ func TestParse(t *testing.T) {
 			parentCalled := false
 			cmd := New(
 				"foo",
-				WithFlag(clipflag.NewString(&parentSFlag, "sflag", clipflag.WithShort("s"))),
-				WithFlag(clipflag.NewBool(&parentFlag, "flag", clipflag.WithShort("f"))),
+				WithFlag(flag.NewString(&parentSFlag, "sflag", flag.WithShort("s"))),
+				WithFlag(flag.NewBool(&parentFlag, "flag", flag.WithShort("f"))),
 				WithCommand(child),
 				WithAction(func(ctx *Context) error {
 					parentCalled = true
@@ -190,7 +190,7 @@ func TestParseError(t *testing.T) {
 			childCalled := false
 			child := New(
 				"child",
-				WithFlag(clipflag.NewBool(&childFlag, "flag")),
+				WithFlag(flag.NewBool(&childFlag, "flag")),
 				WithAction(func(ctx *Context) error {
 					childCalled = true
 					return nil
@@ -201,7 +201,7 @@ func TestParseError(t *testing.T) {
 			parentCalled := false
 			cmd := New(
 				"foo",
-				WithFlag(clipflag.NewBool(&parentFlag, "flag")),
+				WithFlag(flag.NewBool(&parentFlag, "flag")),
 				WithCommand(child),
 				WithAction(func(ctx *Context) error {
 					parentCalled = true

@@ -8,7 +8,7 @@ import (
 	"gotest.tools/assert"
 	"gotest.tools/assert/cmp"
 
-	"github.com/rliebz/clip/clipflag"
+	"github.com/rliebz/clip/flag"
 )
 
 func TestHelpContextFullName(t *testing.T) {
@@ -72,8 +72,8 @@ func TestHiddenFlags(t *testing.T) {
 	root := New(
 		"root",
 		WithWriter(buf),
-		WithFlag(clipflag.NewToggle("visible")),
-		WithFlag(clipflag.NewToggle("hidden", clipflag.AsHidden)),
+		WithFlag(flag.NewToggle("visible")),
+		WithFlag(flag.NewToggle("hidden", flag.AsHidden)),
 	)
 
 	args := []string{root.Name()}

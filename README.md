@@ -17,8 +17,8 @@ import (
   "log"
   "os"
 
-  "github.com/rliebz/clip/cliparg"
-  "github.com/rliebz/clip/clipflag"
+  "github.com/rliebz/clip/arg"
+  "github.com/rliebz/clip/flag"
   "github.com/rliebz/clip/command"
 )
 
@@ -139,7 +139,7 @@ hello := command.New(
 
 Generally, however, it is better to explicitly define the arguments. This gives
 the benefit of documentation, validation, and tab-completion and can be done using
-`command.WithArg` and the `cliparg` package:
+`command.WithArg` and the `arg` package:
 
 ```go
 name := "World"
@@ -147,12 +147,12 @@ hello := command.New(
   "hello",
   command.WithSummary("Greet the world"),
   command.WithArg(
-    cliparg.New(
+    arg.New(
       &name,
       "name",
-      cliparg.AsOptional,
-      cliparg.WithSummary("The person to greet"),
-      cliparg.WithValues([]string{"Alice", "Bruce", "Carl"}),
+      arg.AsOptional,
+      arg.WithSummary("The person to greet"),
+      arg.WithValues([]string{"Alice", "Bruce", "Carl"}),
     ),
   ),
   command.WithAction(func(ctx *command.Context) error {
@@ -190,7 +190,7 @@ Error: argument "Alex" must be one of: Alice, Bruce, Carl
 ### Flags
 
 The `-h`/`--help` flag is defined by default, but more can be created using
-`command.WithFlag`/`command.WithActionFlag` and the `clipflag` package.
+`command.WithFlag`/`command.WithActionFlag` and the `flag` package.
 
 To create a flag that prints the version and exits, use an action flag:
 
@@ -199,10 +199,10 @@ version := "v0.1.0"
 app := command.New(
   "app",
   command.WithActionFlag(
-    clipflag.NewToggle(
+    flag.NewToggle(
       "version",
-      clipflag.WithShort("V"),
-      clipflag.WithSummary("Print the version and exit"),
+      flag.WithShort("V"),
+      flag.WithSummary("Print the version and exit"),
     ),
     func(ctx *command.Context) error {
       fmt.Println(version)
@@ -217,10 +217,10 @@ loud := false
 hello := command.New(
   "hello",
   command.WithFlag(
-    clipflag.NewBool(
+    flag.NewBool(
       &loud,
       "loud",
-      clipflag.WithSummary("Whether to pump up the volume to max"),
+      flag.WithSummary("Whether to pump up the volume to max"),
     ),
   ),
   command.WithAction(func(ctx *command.Context) error {

@@ -1,4 +1,4 @@
-package clipflag
+package flag
 
 import (
 	"fmt"
@@ -20,7 +20,7 @@ func NewFlagSet(name string) *FlagSet {
 }
 
 // FlagSet represents a set of defined flags.
-type FlagSet struct {
+type FlagSet struct { // nolint: golint
 	flagSet *pflag.FlagSet
 }
 

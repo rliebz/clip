@@ -1,4 +1,4 @@
-package clipflag
+package flag
 
 import (
 	"github.com/rliebz/clip"

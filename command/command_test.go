@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/rliebz/clip"
-	"github.com/rliebz/clip/clipflag"
+	"github.com/rliebz/clip/flag"
 	"gotest.tools/assert"
 	"gotest.tools/assert/cmp"
 )
@@ -65,16 +65,16 @@ func TestCommandDefaultHelpFlag(t *testing.T) {
 		passed   string
 		behavior int
 	}{
-		{clipflag.NewToggle("help"), "--help", callsAction},
-		{clipflag.NewToggle("help"), "-h", hasError},
-		{clipflag.NewToggle("help", clipflag.WithShort("h")), "--help", callsAction},
-		{clipflag.NewToggle("help", clipflag.WithShort("h")), "-h", callsAction},
-		{clipflag.NewToggle("help", clipflag.WithShort("n")), "--help", callsAction},
-		{clipflag.NewToggle("help", clipflag.WithShort("n")), "-h", hasError},
-		{clipflag.NewToggle("not-help"), "--help", callsHelp},
-		{clipflag.NewToggle("not-help"), "-h", callsHelp},
-		{clipflag.NewToggle("not-help", clipflag.WithShort("h")), "--help", callsHelp},
-		{clipflag.NewToggle("not-help", clipflag.WithShort("h")), "-h", callsAction},
+		{flag.NewToggle("help"), "--help", callsAction},
+		{flag.NewToggle("help"), "-h", hasError},
+		{flag.NewToggle("help", flag.WithShort("h")), "--help", callsAction},
+		{flag.NewToggle("help", flag.WithShort("h")), "-h", callsAction},
+		{flag.NewToggle("help", flag.WithShort("n")), "--help", callsAction},
+		{flag.NewToggle("help", flag.WithShort("n")), "-h", hasError},
+		{flag.NewToggle("not-help"), "--help", callsHelp},
+		{flag.NewToggle("not-help"), "-h", callsHelp},
+		{flag.NewToggle("not-help", flag.WithShort("h")), "--help", callsHelp},
+		{flag.NewToggle("not-help", flag.WithShort("h")), "-h", callsAction},
 	}
 
 	for _, tt := range testCases {
@@ -150,7 +150,7 @@ func TestCommandFlagAction(t *testing.T) {
 		return nil
 	}
 	flagValue := false
-	flag := clipflag.NewBool(&flagValue, "my-flag")
+	flag := flag.NewBool(&flagValue, "my-flag")
 
 	command := New("foo", WithActionFlag(flag, action))
 
@@ -174,11 +174,11 @@ func TestCommandFlagCorrectAction(t *testing.T) {
 	}
 
 	notCalledValue := false
-	notCalledFlag := clipflag.NewBool(&notCalledValue, "not-called")
+	notCalledFlag := flag.NewBool(&notCalledValue, "not-called")
 	correctValue := false
-	correctFlag := clipflag.NewBool(&correctValue, "my-flag")
+	correctFlag := flag.NewBool(&correctValue, "my-flag")
 	secondValue := false
-	secondFlag := clipflag.NewBool(&secondValue, "second-flag")
+	secondFlag := flag.NewBool(&secondValue, "second-flag")
 
 	subCommand := New("bar", WithAction(wrongAction))
 
@@ -208,9 +208,9 @@ func TestCommandFlagActionError(t *testing.T) {
 	}
 
 	flagValue := false
-	flag := clipflag.NewBool(&flagValue, "my-flag")
+	f := flag.NewBool(&flagValue, "my-flag")
 
-	command := New("foo", WithActionFlag(flag, action))
+	command := New("foo", WithActionFlag(f, action))
 
 	assert.Check(t, !wasCalled)
 	assert.Check(t, !flagValue)

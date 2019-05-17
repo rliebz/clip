@@ -5,7 +5,6 @@ import (
 )
 
 // WithFlag adds a flag.
-// Typically, flags from the clipflag package will be passed here.
 func WithFlag(f clip.Flag) Option {
 	return func(c *config) {
 		f.Define(c.flagSet)
@@ -19,7 +18,7 @@ func WithFlag(f clip.Flag) Option {
 // Flags such as --help or --version fall under this category.
 //
 // The action will occur if the flag is passed, regardless of the value, so
-// typically clipflag.NewToggle will be used here.
+// typically flag.NewToggle will be used here.
 func WithActionFlag(f clip.Flag, action func(*Context) error) Option {
 	return func(c *config) {
 		oldAction := c.flagAction

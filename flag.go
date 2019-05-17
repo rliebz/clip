@@ -1,7 +1,6 @@
 package clip
 
 // Flag is the interface for any flag.
-// Typically, this will be implemented by a flag from the clipflag package.
 type Flag interface {
 	Name() string
 	Short() string
@@ -15,7 +14,6 @@ type Flag interface {
 }
 
 // FlagSet is the interface for a set of flags.
-// Typically, this will be implemented by clipflag.
 type FlagSet interface {
 	Args() []string
 	Changed(name string) bool

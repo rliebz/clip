@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/rliebz/clip"
-	"github.com/rliebz/clip/clipflag"
+	"github.com/rliebz/clip/flag"
 )
 
 // New creates a new command given a name and command options.
@@ -19,7 +19,7 @@ func New(name string, options ...Option) *Command {
 		action:        printCommandHelp,
 		subCommandMap: map[string]*Command{},
 		writer:        os.Stdout,
-		flagSet:       clipflag.NewFlagSet(name),
+		flagSet:       flag.NewFlagSet(name),
 		flagAction:    func(ctx *Context) (bool, error) { return false, nil },
 	}
 
@@ -68,15 +68,15 @@ type config struct {
 // depending on which options are passed.
 func applyConditionalDefaults(c *config) {
 	if !c.flagSet.Has("help") {
-		options := []clipflag.Option{
-			clipflag.WithSummary("Print help and exit"),
+		options := []flag.Option{
+			flag.WithSummary("Print help and exit"),
 		}
 		if !c.flagSet.HasShort("h") {
-			options = append(options, clipflag.WithShort("h"))
+			options = append(options, flag.WithShort("h"))
 		}
 
-		flag := clipflag.NewToggle("help", options...)
-		WithActionFlag(flag, printCommandHelp)(c)
+		f := flag.NewToggle("help", options...)
+		WithActionFlag(f, printCommandHelp)(c)
 	}
 }
 
