@@ -58,16 +58,21 @@ func (fs *FlagSet) HasShort(name string) bool {
 
 // Parse a set of command-line arguments as flags.
 func (fs *FlagSet) Parse(args []string) error {
-	i, err := fs.splitAtFirstArg(args)
+	i, err := fs.nextArgIndex(args)
 	if err != nil {
 		return err
 	}
 
-	args = append(args[:i], append([]string{"--"}, args[i:]...)...)
+	if i != -1 {
+		args = append(args[:i], append([]string{"--"}, args[i:]...)...)
+	}
+
 	return fs.flagSet.Parse(args)
 }
 
-func (fs *FlagSet) splitAtFirstArg(args []string) (int, error) {
+// nextArgIndex finds the index of the next arg in the arg list.
+// If no args are present, -1 is returned.
+func (fs *FlagSet) nextArgIndex(args []string) (int, error) {
 	for i := 0; i < len(args); i++ {
 		arg := args[i]
 		if !isFlag(arg) || arg == "--" {
@@ -84,7 +89,7 @@ func (fs *FlagSet) splitAtFirstArg(args []string) (int, error) {
 		}
 	}
 
-	return len(args), nil
+	return -1, nil
 }
 
 func (fs *FlagSet) getFlagFromArg(arg string) (*pflag.Flag, error) {
