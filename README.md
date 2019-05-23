@@ -212,10 +212,14 @@ app := command.New(
 )
 ```
 
+Flags can be created with different types, such as bool and string:
+
 ```go
 loud := false
+name := "world"
 hello := command.New(
   "hello",
+  command.WithSummary("Greet the world"),
   command.WithFlag(
     flag.NewBool(
       &loud,
@@ -223,12 +227,20 @@ hello := command.New(
       flag.WithSummary("Whether to pump up the volume to max"),
     ),
   ),
+  command.WithFlag(
+    flag.NewString(
+      &name,
+      "name",
+      flag.WithSummary("Who to greet"),
+    ),
+  ),
   command.WithAction(func(ctx *command.Context) error {
+    greeting := fmt.Sprintf("Hello, %s!", name)
     if loud {
-      fmt.Println("HELLO, WORLD!!!")
-    } else {
-      fmt.Println("Hello, World!")
+      greeting = strings.ToUpper(greeting)
     }
+    fmt.Println(greeting)
+
     return nil
   }),
 )
@@ -245,9 +257,10 @@ my-app hello - Greet the world
 Usage:
   my-app hello [options]
 
-Options:
+Flags:
+      --loud  Whether to pump up the volume to max
+      --name  Who to greet
   -h, --help  Print help and exit
-  -l, --loud  Whether the pump up the volume to max
 
 $ my-app hello
 Hello, World!
