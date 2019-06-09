@@ -41,22 +41,13 @@ func (cmd *Command) Summary() string { return cmd.summary }
 // Description is a multi-line description of the command.
 func (cmd *Command) Description() string { return cmd.description }
 
-// Writer is the writer for the command.
-func (cmd *Command) Writer() io.Writer { return cmd.writer }
-
-// VisibleCommands is the list of sub-commands in order.
-func (cmd *Command) VisibleCommands() []*Command { return cmd.visibleCommands }
-
-// VisibleFlags is the list of flags in order.
-func (cmd *Command) VisibleFlags() []clip.Flag { return cmd.visibleFlags }
-
 // Execute runs a command using given args and returns the raw error.
 //
 // This function provides more fine-grained control than Run, and can be used
 // in situations where handling arguments or errors needs more granular control.
 func (cmd *Command) Execute(args []string) error {
 	ctx := &Context{
-		Command: cmd,
+		command: cmd,
 	}
 
 	if len(args) == 0 {
@@ -76,7 +67,7 @@ func (cmd *Command) Execute(args []string) error {
 // For the root command in most applications, the args will be os.Args.
 func (cmd *Command) Run() int {
 	if err := cmd.Execute(os.Args); err != nil {
-		l := log.New(cmd.Writer(), "", 0)
+		l := log.New(cmd.writer, "", 0)
 		printError(l, err)
 		return getExitCode(err)
 	}

@@ -34,7 +34,7 @@ func TestCommandDescription(t *testing.T) {
 func TestCommandWriter(t *testing.T) {
 	writer := new(bytes.Buffer)
 	command := New("foo", WithWriter(writer))
-	assert.Equal(t, command.Writer(), writer)
+	assert.Equal(t, command.writer, writer)
 }
 
 func TestCommandExecuteHelp(t *testing.T) {

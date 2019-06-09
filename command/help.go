@@ -4,19 +4,21 @@ import (
 	"fmt"
 	"io"
 	"text/template"
+
+	"github.com/rliebz/clip"
 )
 
 // newHelpContext creates a helpContext from a Context.
 func newHelpContext(ctx *Context) *helpContext {
 	maxCmdNameLen := 0
-	for _, cmd := range ctx.visibleCommands {
+	for _, cmd := range ctx.command.visibleCommands {
 		if len(cmd.Name()) > maxCmdNameLen {
 			maxCmdNameLen = len(cmd.Name())
 		}
 	}
 
 	maxFlagNameLen := 0
-	for _, flag := range ctx.visibleFlags {
+	for _, flag := range ctx.command.visibleFlags {
 		if len(flag.Name()) > maxFlagNameLen {
 			maxFlagNameLen = len(flag.Name())
 		}
@@ -38,16 +40,22 @@ type helpContext struct {
 }
 
 func (ctx *helpContext) FullName() string {
-	name := ctx.Name()
+	name := ctx.command.Name()
 
 	cur := ctx.Parent()
 	for cur != nil {
-		name = fmt.Sprintf("%s %s", cur.Name(), name)
+		name = fmt.Sprintf("%s %s", cur.command.Name(), name)
 		cur = cur.Parent()
 	}
 
 	return name
 }
+
+// VisibleCommands is the list of sub-commands in order.
+func (ctx *helpContext) VisibleCommands() []*Command { return ctx.command.visibleCommands }
+
+// VisibleFlags is the list of flags in order.
+func (ctx *helpContext) VisibleFlags() []clip.Flag { return ctx.command.visibleFlags }
 
 const helpTemplateString = `{{.FullName}}{{if .Summary}} - {{.Summary}}{{end}}{{if .Description}}
 
@@ -61,7 +69,7 @@ Flags:{{range .VisibleFlags}}
 `
 
 var printCommandHelp = func(ctx *Context) error {
-	return writeCommandHelp(ctx.writer, ctx)
+	return writeCommandHelp(ctx.Writer(), ctx)
 }
 
 func writeCommandHelp(wr io.Writer, ctx *Context) error {
