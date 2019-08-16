@@ -1,9 +1,10 @@
 # Clip
 
 Clip is a highly opinionated, highly unstable library for building command-line
-applications, using [functional options for friendly APIs][functional].
+applications.
 
-**Warning: Clip is incomplete software and should not be used by anyone.**
+**Warning: Clip is currently incomplete software and should not yet be used by
+anyone.**
 
 ## Quick Start
 
@@ -14,20 +15,20 @@ any directory structure. For an app named `my-app`:
 package main
 
 import (
-  "log"
-  "os"
+	"log"
+	"os"
 
-  "github.com/rliebz/clip/arg"
-  "github.com/rliebz/clip/flag"
-  "github.com/rliebz/clip/command"
+	"github.com/rliebz/clip/arg"
+	"github.com/rliebz/clip/flag"
+	"github.com/rliebz/clip/command"
 )
 
 func main() {
-  // Create a command-line application
-  app := command.New("my-app")
+	// Create a command-line application
+	app := command.New("my-app")
 
-  // Run it
-  os.Exit(app.Run())
+	// Run it
+	os.Exit(app.Run())
 }
 ```
 
@@ -41,22 +42,22 @@ Options:
   -h, --help  Print help and exit
 ```
 
-Of course, since our app doesn't do anything, the help documentation isn't very
-useful. Commands can be configured by passing a list of functional options,
-such as `command.WithSummary` for a one-line summary, or `command.WithDescription`
-for a slightly longer description:
+Since this app doesn't do anything, the help documentation isn't very useful.
+Commands can be configured by passing a list of functional options, such as
+`command.WithSummary` for a one-line summary, or `command.WithDescription` for
+a slightly longer description:
 
 ```go
 app := command.New(
-  "my-app",
-  command.WithSummary("A command-line application"),
-  command.WithDescription(`This is a simple "Hello World" demo application.`),
+	"my-app",
+	command.WithSummary("A command-line application"),
+	command.WithDescription(`This is a simple "Hello World" demo application.`),
 )
 
 os.Exit(app.Run())
 ```
 
-Now when we run it:
+Now when running my-app:
 
 ```text
 $ my-app
@@ -68,34 +69,34 @@ Options:
   -h, --help  Print help and exit
 ```
 
-Let's add a sub-command using `WithCommand`, and functionality using
-`WithAction`. Because commands are immutable once created, we must declare sub-
-commands before their parent commands:
+Let's add a sub-command using `command.WithCommand` and functionality using
+`command.WithAction`. Because commands are immutable once created, we must
+declare sub-commands before their parent commands:
 
 ```go
 // Define a sub-command "hello"
 hello := command.New(
-  "hello",
-  command.WithSummary("Greet the world"),
-  command.WithAction(func(ctx *command.Context) error {
-    fmt.Println("Hello, world!")
-    return nil
-  }),
+	"hello",
+	command.WithSummary("Greet the world"),
+	command.WithAction(func(ctx *command.Context) error {
+	  fmt.Println("Hello, world!")
+	  return nil
+	}),
 )
 
-// Create a root command "my-app"
+// Create the root command "my-app"
 app := command.New(
-  "my-app",
-  command.WithSummary("A command-line application"),
-  command.WithDescription(`This is a simple "Hello World" demo application.`),
-  command.WithCommand(hello),
+	"my-app",
+	command.WithSummary("A command-line application"),
+	command.WithDescription(`This is a simple "Hello World" demo application.`),
+	command.WithCommand(hello),
 )
 
 // Run it
 os.Exit(app.Run())
 ```
 
-We can see sub-commands in the help documentation:
+Sub-commands also appear in the help documentation:
 
 ```text
 $ my-app
@@ -129,11 +130,11 @@ By default, arguments are available as a slice from an action's context:
 
 ```go
 hello := command.New(
-  "hello",
-  command.WithAction(func (ctx *command.Context) error {
-    fmt.Println("Args: ", ctx.Args())
-    return nil
-  }),
+	"hello",
+	command.WithAction(func (ctx *command.Context) error {
+	  fmt.Println("Args: ", ctx.Args())
+	  return nil
+	}),
 )
 ```
 
@@ -144,22 +145,22 @@ the benefit of documentation, validation, and tab-completion and can be done usi
 ```go
 name := "World"
 hello := command.New(
-  "hello",
-  command.WithSummary("Greet the world"),
-  command.WithArg(
-    arg.New(
-      &name,
-      "name",
-      arg.AsOptional,
-      arg.WithSummary("The person to greet"),
-      arg.WithValues([]string{"Alice", "Bruce", "Carl"}),
-    ),
-  ),
-  command.WithAction(func(ctx *command.Context) error {
-    greeting := fmt.Sprintf("Hello, %s\n", name)
-    fmt.Println(greeting)
-    return nil
-  }),
+	"hello",
+	command.WithSummary("Greet the world"),
+	command.WithArg(
+		arg.New(
+			&name,
+			"name",
+			arg.AsOptional,
+			arg.WithSummary("The person to greet"),
+			arg.WithValues([]string{"Alice", "Bruce", "Carl"}),
+		),
+	),
+	command.WithAction(func(ctx *command.Context) error {
+		greeting := fmt.Sprintf("Hello, %s\n", name)
+		fmt.Println(greeting)
+		return nil
+	}),
 )
 ```
 
@@ -197,18 +198,18 @@ To create a flag that prints the version and exits, use an action flag:
 ```go
 version := "v0.1.0"
 app := command.New(
-  "app",
-  command.WithActionFlag(
-    flag.NewToggle(
-      "version",
-      flag.WithShort("V"),
-      flag.WithSummary("Print the version and exit"),
-    ),
-    func(ctx *command.Context) error {
-      fmt.Println(version)
-      return nil
-    },
-  ),
+	"app",
+	command.WithActionFlag(
+		flag.NewToggle(
+			"version",
+			flag.WithShort("V"),
+			flag.WithSummary("Print the version and exit"),
+		),
+		func(ctx *command.Context) error {
+			fmt.Println(version)
+			return nil
+		},
+	),
 )
 ```
 
@@ -218,31 +219,31 @@ Flags can be created with different types, such as bool and string:
 loud := false
 name := "world"
 hello := command.New(
-  "hello",
-  command.WithSummary("Greet the world"),
-  command.WithFlag(
-    flag.NewBool(
-      &loud,
-      "loud",
-      flag.WithSummary("Whether to pump up the volume to max"),
-    ),
-  ),
-  command.WithFlag(
-    flag.NewString(
-      &name,
-      "name",
-      flag.WithSummary("Who to greet"),
-    ),
-  ),
-  command.WithAction(func(ctx *command.Context) error {
-    greeting := fmt.Sprintf("Hello, %s!", name)
-    if loud {
-      greeting = strings.ToUpper(greeting)
-    }
-    fmt.Println(greeting)
+	"hello",
+	command.WithSummary("Greet the world"),
+	command.WithFlag(
+		flag.NewBool(
+			&loud,
+			"loud",
+			flag.WithSummary("Whether to pump up the volume to max"),
+		),
+	),
+	command.WithFlag(
+		flag.NewString(
+			&name,
+			"name",
+			flag.WithSummary("Who to greet"),
+		),
+	),
+	command.WithAction(func(ctx *command.Context) error {
+		greeting := fmt.Sprintf("Hello, %s!", name)
+		if loud {
+			greeting = strings.ToUpper(greeting)
+		}
+		fmt.Println(greeting)
 
-    return nil
-  }),
+		return nil
+	}),
 )
 ```
 
@@ -273,5 +274,4 @@ HELLO, WORLD!!!
 ```
 
 
-[functional]: https://dave.cheney.net/2014/10/17/functional-options-for-friendly-apis
 [gnu-flags]: https://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html
