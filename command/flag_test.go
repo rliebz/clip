@@ -10,7 +10,7 @@ import (
 )
 
 func TestParse(t *testing.T) {
-	var testCases = []struct {
+	tests := []struct {
 		args         []string
 		childSFlag   string
 		parentSFlag  string
@@ -107,7 +107,7 @@ func TestParse(t *testing.T) {
 		},
 	}
 
-	for _, tt := range testCases {
+	for _, tt := range tests {
 		t.Run(fmt.Sprintf("args: %v", tt.args), func(t *testing.T) {
 			childFlag := false
 			childSFlag := ""
@@ -146,11 +146,10 @@ func TestParse(t *testing.T) {
 			assert.Check(t, cmp.Equal(parentSFlag, tt.parentSFlag))
 		})
 	}
-
 }
 
 func TestParseError(t *testing.T) {
-	var testCases = []struct {
+	tests := []struct {
 		args []string
 		err  string
 	}{
@@ -184,7 +183,7 @@ func TestParseError(t *testing.T) {
 		},
 	}
 
-	for _, tt := range testCases {
+	for _, tt := range tests {
 		t.Run(fmt.Sprintf("args: %v", tt.args), func(t *testing.T) {
 			childFlag := false
 			childCalled := false

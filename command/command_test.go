@@ -60,7 +60,7 @@ func TestCommandDefaultHelpFlag(t *testing.T) {
 		hasError    = iota
 	)
 
-	testCases := []struct {
+	tests := []struct {
 		flag     clip.Flag
 		passed   string
 		behavior int
@@ -77,7 +77,7 @@ func TestCommandDefaultHelpFlag(t *testing.T) {
 		{flag.NewToggle("not-help", flag.WithShort("h")), "-h", callsAction},
 	}
 
-	for _, tt := range testCases {
+	for _, tt := range tests {
 		t.Run(
 			fmt.Sprintf("Flag %q/%q passed %s", tt.flag.Name(), tt.flag.Short(), tt.passed),
 			func(t *testing.T) {

@@ -64,7 +64,7 @@ func TestContextRoot(t *testing.T) {
 	bar := New("bar", WithCommand(foo))
 	baz := New("baz", WithCommand(bar))
 
-	testCases := []struct {
+	tests := []struct {
 		args []string
 		cmd  *Command
 	}{
@@ -73,7 +73,7 @@ func TestContextRoot(t *testing.T) {
 		{[]string{"baz", "bar", "foo"}, baz},
 	}
 
-	for _, tt := range testCases {
+	for _, tt := range tests {
 		t.Run(fmt.Sprintf("chain of %d command(s)", len(tt.args)), func(t *testing.T) {
 			assert.NilError(t, tt.cmd.Execute(tt.args))
 			assert.Check(t, tctx.Root().Name() == tt.cmd.Name())
