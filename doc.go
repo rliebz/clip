@@ -35,7 +35,7 @@ By default, commands with no action specified print the help documentation:
 	my-app
 
 	Options:
-		-h, --help  Print help and exit
+	  -h, --help  Print help and exit
 
 Since this app doesn't do anything, the help documentation isn't very useful.
 Commands can be configured by passing a list of functional options, such as
@@ -58,7 +58,7 @@ Now when running my-app:
 	This is a simple "Hello World" demo application
 
 	Options:
-		-h, --help  Print help and exit
+	  -h, --help  Print help and exit
 
 Let's add a sub-command using command.WithCommand and functionality using
 command.WithAction. Because commands are immutable once created, we must
@@ -93,16 +93,16 @@ Sub-commands also appear in the help documentation:
 	This is a simple "Hello World" demo application.
 
 	Commands:
-		hello  Greet the world
+	  hello  Greet the world
 
 	Options:
-		-h, --help  Print help and exit
+	  -h, --help  Print help and exit
 
 	$ my-app hello --help
 	my-app hello - Greet the world
 
 	Options:
-		-h, --help  Print help and exit
+	  -h, --help  Print help and exit
 
 And the command can be run:
 
