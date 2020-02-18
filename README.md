@@ -18,8 +18,6 @@ import (
 	"log"
 	"os"
 
-	"github.com/rliebz/clip/arg"
-	"github.com/rliebz/clip/flag"
 	"github.com/rliebz/clip/command"
 )
 
@@ -34,7 +32,7 @@ func main() {
 
 By default, commands with no action specified print the help documentation:
 
-```text
+```
 $ my-app
 my-app
 
@@ -59,7 +57,7 @@ os.Exit(app.Run())
 
 Now when running my-app:
 
-```text
+```
 $ my-app
 my-app - A command-line application
 
@@ -98,7 +96,7 @@ os.Exit(app.Run())
 
 Sub-commands also appear in the help documentation:
 
-```text
+```
 $ my-app
 my-app - A command-line application
 
@@ -119,7 +117,7 @@ Options:
 
 And the command can be run:
 
-```text
+```
 $ my-app hello
 Hello, world!
 ```
@@ -139,8 +137,8 @@ hello := command.New(
 ```
 
 Generally, however, it is better to explicitly define the arguments. This gives
-the benefit of documentation, validation, and tab-completion and can be done using
-`command.WithArg` and the `arg` package:
+the benefit of documentation, validation, and tab-completion and can be done
+using `command.WithArg` and the `arg` package:
 
 ```go
 name := "World"
@@ -164,7 +162,9 @@ hello := command.New(
 )
 ```
 
-```text
+This produces an app with the following behavior:
+
+```
 $ my-app hello --help
 my-app hello - Greet the world
 
@@ -187,6 +187,8 @@ Hello, Alice!
 $ my-app hello Alex
 Error: argument "Alex" must be one of: Alice, Bruce, Carl
 ```
+
+Arguments and sub-commands are mutually exclusive.
 
 ### Flags
 
@@ -251,7 +253,7 @@ Flags are defined using [POSIX/GNU-style flags][gnu-flags], with `--foo` for a
 flag named `"foo"`, and a short, one character flag prefixed with `-` if
 specified.
 
-```text
+```
 $ my-app hello --help
 my-app hello - Greet the world
 
