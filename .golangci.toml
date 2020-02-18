@@ -1,7 +1,7 @@
 [issues]
 exclude = [
   # goconst: Ignore for example/test data
-  'string `(foo|bar|baz|qux|example|exit \d|mytask|OPTION_VAR)` has \d+ occurrences',
+  'string `(foo|bar|baz|qux)` has \d+ occurrences',
   # golint: false positives for multi-file packages
   'should have a package comment',
   # gosec: Duplicate of errcheck
@@ -11,23 +11,53 @@ exclude = [
 ]
 exclude-use-default = false
 
+  [[issues.exclude-rules]]
+  path = '_test\.go'
+  linters = [
+    "dupl",
+    "gocyclo",
+    "gocognit",
+    "gosec",
+  ]
+
 [linters]
-enable-all = true
-disable = [
-  "gochecknoglobals", # There are valid use cases for globals
-  "goimports",        # Performance: https://github.com/golangci/golangci-lint/issues/263
-  "maligned",         # Readability is more important than saving bytes
-  "scopelint",        # False positives in tests: https://github.com/kyoh86/scopelint/issues/4
+enable = [
+  "bodyclose",
+  "golint",
+  "stylecheck",
+  "gosec",
+  "interfacer",
+  "unconvert",
+  "dupl",
+  "goconst",
+  "gocyclo",
+  "gocognit",
+  "gofmt",
+  "goimports",
+  "lll",
+  "misspell",
+  "unparam",
+  "nakedret",
+  "prealloc",
+  "gocritic",
+  "gochecknoinits",
+  "whitespace",
 ]
 
 [linters-settings]
 
   [linters-settings.goconst]
   min-len = 0
-  min-occurrences = 2
+  min-occurrences = 3
+
+  [linters-settings.gocognit]
+  min-complexity = 15
 
   [linters-settings.gocyclo]
   min-complexity = 10
+
+  [linters-settings.gofmt]
+  simplify = true
 
   [linters-settings.golint]
   min-confidence = 0.0
