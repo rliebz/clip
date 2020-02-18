@@ -28,11 +28,6 @@ func (ctx *Context) Writer() io.Writer {
 	return ctx.command.writer
 }
 
-// Args returns the list of arguments.
-func (ctx *Context) Args() []string {
-	return ctx.command.flagSet.Args()
-}
-
 // Parent is the context's parent context.
 func (ctx *Context) Parent() *Context { return ctx.parent }
 
@@ -43,6 +38,11 @@ func (ctx *Context) Root() *Context {
 		cur = cur.parent
 	}
 	return cur
+}
+
+// Args returns the list of arguments.
+func (ctx *Context) args() []string {
+	return ctx.command.flagSet.Args()
 }
 
 // run runs the command with a given context.
@@ -57,18 +57,19 @@ func (ctx *Context) run(args []string) error {
 	}
 
 	// No sub commands or command action
-	if len(ctx.command.subCommandMap) == 0 || len(ctx.Args()) == 0 {
+	if len(ctx.command.subCommandMap) == 0 || len(ctx.args()) == 0 {
 		return ctx.command.action(ctx)
 	}
 
 	// Sub commands, something passed
-	subCmdName := ctx.Args()[0]
+	subCmdName := ctx.args()[0]
 	if subCmd, ok := ctx.command.subCommandMap[subCmdName]; ok {
 		subCtx := Context{
 			command: subCmd,
 			parent:  ctx,
 		}
-		return subCtx.run(ctx.Args())
+
+		return subCtx.run(ctx.args())
 	}
 
 	return newUsageErrorf(ctx, "undefined sub-command: %s", subCmdName)

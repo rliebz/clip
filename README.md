@@ -124,13 +124,19 @@ Hello, world!
 
 ### Arguments
 
-By default, arguments are available as a slice from an action's context:
+By default, any unexpected arguments passed to a command are considered an
+error.
+
+To make arguments available as a slice from an action's context, the function
+`command.WithArgs` can be used:
 
 ```go
+var args []string
 hello := command.New(
 	"hello",
+	command.WithArgs(&args),
 	command.WithAction(func (ctx *command.Context) error {
-	  fmt.Println("Args: ", ctx.Args())
+	  fmt.Println("Args: ", args)
 	  return nil
 	}),
 )

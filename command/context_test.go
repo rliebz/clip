@@ -32,7 +32,7 @@ func TestContextParent(t *testing.T) {
 	assert.NilError(t, parent.Execute(args))
 	assert.Assert(t, wasCalled)
 	assert.Check(t, pctx.Name() == parent.Name())
-	assert.Check(t, cmp.DeepEqual(pctx.Args(), args[1:]))
+	assert.Check(t, cmp.DeepEqual(pctx.args(), args[1:]))
 }
 
 func TestContextParentNil(t *testing.T) {
