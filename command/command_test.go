@@ -78,38 +78,37 @@ func TestCommandDefaultHelpFlag(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(
-			fmt.Sprintf("Flag %q/%q passed %s", tt.flag.Name(), tt.flag.Short(), tt.passed),
-			func(t *testing.T) {
-				cmdName := "foo"
-				output := new(bytes.Buffer)
-				flagActionCalled := false
-				command := New(
-					cmdName,
-					WithActionFlag(
-						tt.flag,
-						func(ctx *Context) error {
-							flagActionCalled = true
-							return nil
-						},
-					),
-					WithWriter(output),
-				)
-				err := command.Execute([]string{cmdName, tt.passed})
-				helpText := output.String()
-				switch tt.behavior {
-				case callsHelp:
-					assert.NilError(t, err)
-					assert.Check(t, !flagActionCalled)
-					assert.Check(t, cmp.Contains(helpText, command.Name()))
-				case callsAction:
-					assert.NilError(t, err)
-					assert.Check(t, flagActionCalled)
-					assert.Check(t, helpText == "")
-				case hasError:
-					assert.Error(t, err, "unknown shorthand flag: 'h' in -h")
-				}
-			})
+		name := fmt.Sprintf("Flag %q/%q passed %s", tt.flag.Name(), tt.flag.Short(), tt.passed)
+		t.Run(name, func(t *testing.T) {
+			cmdName := "foo"
+			output := new(bytes.Buffer)
+			flagActionCalled := false
+			command := New(
+				cmdName,
+				WithActionFlag(
+					tt.flag,
+					func(ctx *Context) error {
+						flagActionCalled = true
+						return nil
+					},
+				),
+				WithWriter(output),
+			)
+			err := command.Execute([]string{cmdName, tt.passed})
+			helpText := output.String()
+			switch tt.behavior {
+			case callsHelp:
+				assert.NilError(t, err)
+				assert.Check(t, !flagActionCalled)
+				assert.Check(t, cmp.Contains(helpText, command.Name()))
+			case callsAction:
+				assert.NilError(t, err)
+				assert.Check(t, flagActionCalled)
+				assert.Check(t, helpText == "")
+			case hasError:
+				assert.Error(t, err, "unknown shorthand flag: 'h' in -h")
+			}
+		})
 	}
 }
 
