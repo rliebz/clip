@@ -33,6 +33,7 @@ type Command struct {
 	visibleCommands []*Command
 	visibleFlags    []clip.Flag
 	subCommandMap   map[string]*Command
+	argAction       func(*Context) error
 	flagAction      func(*Context) (wasSet bool, err error)
 }
 
@@ -45,7 +46,24 @@ func (cmd *Command) Summary() string { return cmd.summary }
 // Description is a multi-line description of the command.
 func (cmd *Command) Description() string { return cmd.description }
 
+// Run runs a command and returns a status code.
+//
+// Typically, this will be called inside of os.Exit in the main function of an
+// application.
+func (cmd *Command) Run() int {
+	if err := cmd.Execute(os.Args); err != nil {
+		l := log.New(cmd.writer, "", 0)
+		printError(l, err)
+		return getExitCode(err)
+	}
+
+	return 0
+}
+
 // Execute runs a command using given args and returns the raw error.
+//
+// The args passed should begin with the name of the command itself.
+// For the root command in most applications, the args will be os.Args.
 //
 // This function provides more fine-grained control than Run, and can be used
 // in situations where handling arguments or errors needs more granular control.
@@ -63,18 +81,4 @@ func (cmd *Command) Execute(args []string) error {
 	}
 
 	return nil
-}
-
-// Run runs a command.
-//
-// The args passed should begin with the name of the command itself.
-// For the root command in most applications, the args will be os.Args.
-func (cmd *Command) Run() int {
-	if err := cmd.Execute(os.Args); err != nil {
-		l := log.New(cmd.writer, "", 0)
-		printError(l, err)
-		return getExitCode(err)
-	}
-
-	return 0
 }

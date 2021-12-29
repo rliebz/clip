@@ -56,6 +56,12 @@ func (ctx *Context) run(args []string) error {
 		return err
 	}
 
+	// TODO: Should this be combined with the .action?
+	// Arg action
+	if err := ctx.command.argAction(ctx); err != nil {
+		return err
+	}
+
 	// No sub commands or command action
 	if len(ctx.command.subCommandMap) == 0 || len(ctx.args()) == 0 {
 		return ctx.command.action(ctx)

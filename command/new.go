@@ -42,6 +42,7 @@ func New(name string, options ...Option) *Command {
 		visibleCommands: c.visibleCommands,
 		visibleFlags:    c.visibleFlags,
 		subCommandMap:   c.subCommandMap,
+		argAction:       c.argAction,
 		flagAction:      c.flagAction,
 	}
 }
@@ -60,6 +61,7 @@ type config struct {
 	visibleCommands []*Command
 	visibleFlags    []clip.Flag
 	subCommandMap   map[string]*Command
+	argAction       func(*Context) error
 	flagAction      func(*Context) (wasSet bool, err error)
 }
 
@@ -77,6 +79,22 @@ func applyConditionalDefaults(c *config) {
 
 		f := flag.NewToggle("help", options...)
 		WithActionFlag(f, printCommandHelp)(c)
+	}
+
+	if c.argAction == nil {
+		c.argAction = func(ctx *Context) error {
+			// TODO: This currently disallows sub-commands.
+			//
+			// We either want to combine this with sub-command logic to make
+			// our arg action effectively the same as our action, or just whitelist
+			// this to make it a noop if we're doing valid sub-command things.
+
+			if args := ctx.args(); len(args) != 0 {
+				return fmt.Errorf("unexpected arguments received: %v", args)
+			}
+
+			return nil
+		}
 	}
 }
 
