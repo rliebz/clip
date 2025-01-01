@@ -2,19 +2,19 @@ package command
 
 import (
 	"bytes"
-	"strings"
 	"testing"
 
-	"gotest.tools/assert"
-	"gotest.tools/assert/cmp"
+	"github.com/rliebz/ghost"
+	"github.com/rliebz/ghost/be"
 
 	"github.com/rliebz/clip/flag"
 )
 
 func TestHelpContextFullName(t *testing.T) {
-	var hctx *helpContext
+	g := ghost.New(t)
 
 	wasCalled := false
+	var hctx *helpContext
 	action := func(ctx *Context) error {
 		wasCalled = true
 		hctx = newHelpContext(ctx)
@@ -26,12 +26,14 @@ func TestHelpContextFullName(t *testing.T) {
 	root := New("root", WithCommand(child))
 
 	args := []string{root.Name(), child.Name(), grandchild.Name()}
-	assert.NilError(t, root.Execute(args))
-	assert.Assert(t, wasCalled)
-	assert.Check(t, hctx.FullName() == "root child grandchild")
+	g.NoError(root.Execute(args))
+	g.Should(be.True(wasCalled))
+	g.Should(be.Equal(hctx.FullName(), "root child grandchild"))
 }
 
 func TestHelpCommands(t *testing.T) {
+	g := ghost.New(t)
+
 	buf := new(bytes.Buffer)
 	root := New(
 		"root",
@@ -42,15 +44,17 @@ func TestHelpCommands(t *testing.T) {
 	)
 
 	args := []string{root.Name()}
-	assert.NilError(t, root.Execute(args))
+	g.NoError(root.Execute(args))
 
 	output := buf.String()
-	assert.Check(t, cmp.Contains(output, "child-one    1"))
-	assert.Check(t, cmp.Contains(output, "child-two    2"))
-	assert.Check(t, cmp.Contains(output, "child-three  3"))
+	g.Should(be.StringContaining(output, "child-one    1"))
+	g.Should(be.StringContaining(output, "child-two    2"))
+	g.Should(be.StringContaining(output, "child-three  3"))
 }
 
 func TestHidden(t *testing.T) {
+	g := ghost.New(t)
+
 	buf := new(bytes.Buffer)
 	root := New(
 		"root",
@@ -60,14 +64,16 @@ func TestHidden(t *testing.T) {
 	)
 
 	args := []string{root.Name()}
-	assert.NilError(t, root.Execute(args))
+	g.NoError(root.Execute(args))
 
 	output := buf.String()
-	assert.Check(t, cmp.Contains(output, "visible"))
-	assert.Check(t, !strings.Contains(output, "hidden"))
+	g.Should(be.StringContaining(output, "visible"))
+	g.ShouldNot(be.StringContaining(output, "hidden"))
 }
 
 func TestHiddenFlags(t *testing.T) {
+	g := ghost.New(t)
+
 	buf := new(bytes.Buffer)
 	root := New(
 		"root",
@@ -77,9 +83,9 @@ func TestHiddenFlags(t *testing.T) {
 	)
 
 	args := []string{root.Name()}
-	assert.NilError(t, root.Execute(args))
+	g.NoError(root.Execute(args))
 
 	output := buf.String()
-	assert.Check(t, cmp.Contains(output, "visible"))
-	assert.Check(t, !strings.Contains(output, "hidden"))
+	g.Should(be.StringContaining(output, "visible"))
+	g.ShouldNot(be.StringContaining(output, "hidden"))
 }

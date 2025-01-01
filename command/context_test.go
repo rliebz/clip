@@ -4,14 +4,15 @@ import (
 	"fmt"
 	"testing"
 
-	"gotest.tools/assert"
-	"gotest.tools/assert/cmp"
+	"github.com/rliebz/ghost"
+	"github.com/rliebz/ghost/be"
 )
 
 func TestContextParent(t *testing.T) {
-	var pctx *Context
+	g := ghost.New(t)
 
 	wasCalled := false
+	var pctx *Context
 	action := func(ctx *Context) error {
 		wasCalled = true
 		pctx = ctx.Parent()
@@ -29,17 +30,19 @@ func TestContextParent(t *testing.T) {
 	)
 
 	args := []string{parent.Name(), child.Name()}
-	assert.NilError(t, parent.Execute(args))
-	assert.Assert(t, wasCalled)
-	assert.Check(t, pctx.Name() == parent.Name())
-	assert.Check(t, cmp.DeepEqual(pctx.args(), args[1:]))
+	g.NoError(parent.Execute(args))
+	g.Should(be.True(wasCalled))
+	g.Should(be.Equal(pctx.Name(), parent.Name()))
+	g.Should(be.DeepEqual(pctx.args(), args[1:]))
 }
 
 func TestContextParentNil(t *testing.T) {
+	g := ghost.New(t)
+
 	wasCalled := false
 	action := func(ctx *Context) error {
 		wasCalled = true
-		assert.Check(t, ctx.Parent() == nil)
+		g.Should(be.Nil(ctx.Parent()))
 		return nil
 	}
 
@@ -48,13 +51,12 @@ func TestContextParentNil(t *testing.T) {
 		WithAction(action),
 	)
 
-	assert.NilError(t, cmd.Execute([]string{cmd.Name()}))
-	assert.Assert(t, wasCalled)
+	g.NoError(cmd.Execute([]string{cmd.Name()}))
+	g.Should(be.True(wasCalled))
 }
 
 func TestContextRoot(t *testing.T) {
 	var tctx *Context
-
 	action := func(ctx *Context) error {
 		tctx = ctx
 		return nil
@@ -75,8 +77,10 @@ func TestContextRoot(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("chain of %d command(s)", len(tt.args)), func(t *testing.T) {
-			assert.NilError(t, tt.cmd.Execute(tt.args))
-			assert.Check(t, tctx.Root().Name() == tt.cmd.Name())
+			g := ghost.New(t)
+
+			g.NoError(tt.cmd.Execute(tt.args))
+			g.Should(be.Equal(tctx.Root().Name(), tt.cmd.Name()))
 		})
 	}
 }

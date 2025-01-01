@@ -18,9 +18,19 @@ func New(name string, options ...Option) *Command {
 	c := config{
 		action:        printCommandHelp,
 		subCommandMap: map[string]*Command{},
-		writer:        os.Stdout,
-		flagSet:       flag.NewFlagSet(name),
-		flagAction:    func(*Context) (bool, error) { return false, nil },
+		// TODO: I'm pretty sure this means if we set the writer at the root
+		// command but not sub-commands that we end up using os.Stdout on
+		// sub-commands, which surprises but does not delight.
+		//
+		// Resolution is probably some combination of:
+		//  1. Leave the value empty so we can differentiate whether os.Stdout
+		//     was explicitly passed or not. Or maybe add a boolean flag to track
+		//     so our logic doesn't have to use [cmp.Or] or whatever.
+		//  2. When a sub-command is... registered? invoked? use the parent's
+		//     writer if one hasn't been explicitly specified.
+		writer:     os.Stdout,
+		flagSet:    flag.NewFlagSet(name),
+		flagAction: func(*Context) (bool, error) { return false, nil },
 	}
 
 	// Overwrite defaults with passed options

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"gotest.tools/assert"
-	"gotest.tools/assert/cmp"
+	"github.com/rliebz/ghost"
+	"github.com/rliebz/ghost/be"
 
 	"github.com/rliebz/clip/flag"
 )
@@ -110,6 +110,8 @@ func TestParse(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("args: %v", tt.args), func(t *testing.T) {
+			g := ghost.New(t)
+
 			childFlag := false
 			childSFlag := ""
 			childCalled := false
@@ -137,14 +139,14 @@ func TestParse(t *testing.T) {
 				}),
 			)
 
-			assert.NilError(t, cmd.Execute(tt.args))
+			g.NoError(cmd.Execute(tt.args))
 
-			assert.Check(t, cmp.Equal(childCalled, tt.childCalled))
-			assert.Check(t, cmp.Equal(childFlag, tt.childFlag))
-			assert.Check(t, cmp.Equal(childSFlag, tt.childSFlag))
-			assert.Check(t, cmp.Equal(parentCalled, tt.parentCalled))
-			assert.Check(t, cmp.Equal(parentFlag, tt.parentFlag))
-			assert.Check(t, cmp.Equal(parentSFlag, tt.parentSFlag))
+			g.Should(be.Equal(childCalled, tt.childCalled))
+			g.Should(be.Equal(childFlag, tt.childFlag))
+			g.Should(be.Equal(childSFlag, tt.childSFlag))
+			g.Should(be.Equal(parentCalled, tt.parentCalled))
+			g.Should(be.Equal(parentFlag, tt.parentFlag))
+			g.Should(be.Equal(parentSFlag, tt.parentSFlag))
 		})
 	}
 }
@@ -186,6 +188,8 @@ func TestParseError(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("args: %v", tt.args), func(t *testing.T) {
+			g := ghost.New(t)
+
 			childFlag := false
 			childCalled := false
 			child := New(
@@ -209,9 +213,9 @@ func TestParseError(t *testing.T) {
 				}),
 			)
 
-			assert.Error(t, cmd.Execute(tt.args), tt.err)
-			assert.Check(t, cmp.Equal(childCalled, false))
-			assert.Check(t, cmp.Equal(parentCalled, false))
+			g.Should(be.ErrorEqual(cmd.Execute(tt.args), tt.err))
+			g.Should(be.False(childCalled))
+			g.Should(be.False(parentCalled))
 		})
 	}
 }
