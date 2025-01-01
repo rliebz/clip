@@ -5,7 +5,7 @@ command-line applications.
 Warning: Clip is current incomplete software and should not yet be used by
 anyone.
 
-Quick Start
+# Quick Start
 
 To get an app running requires no special configuration and does not prescribe
 any directory structure. For an app named `my-app`:

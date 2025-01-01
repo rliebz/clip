@@ -2,6 +2,7 @@ package command
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"log"
 )
@@ -25,8 +26,9 @@ func (e exitError) ExitCode() int { return e.code }
 
 // getExitCode gets an exit code if it exists, or returns 1.
 func getExitCode(err error) int {
-	if ee, ok := err.(exitError); ok {
-		return ee.ExitCode()
+	var exitErr exitError
+	if errors.As(err, &exitErr) {
+		return exitErr.ExitCode()
 	}
 	return 1
 }
@@ -71,6 +73,6 @@ type usageError struct {
 func (e usageError) Error() string { return e.message }
 func (e usageError) ErrorContext() string {
 	b := new(bytes.Buffer)
-	_ = writeCommandHelp(b, e.context) // nolint: gas
+	_ = writeCommandHelp(b, e.context) //nolint: gas
 	return b.String()
 }

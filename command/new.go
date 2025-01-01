@@ -20,7 +20,7 @@ func New(name string, options ...Option) *Command {
 		subCommandMap: map[string]*Command{},
 		writer:        os.Stdout,
 		flagSet:       flag.NewFlagSet(name),
-		flagAction:    func(ctx *Context) (bool, error) { return false, nil },
+		flagAction:    func(*Context) (bool, error) { return false, nil },
 	}
 
 	// Overwrite defaults with passed options

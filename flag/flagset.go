@@ -2,17 +2,18 @@ package flag
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"strings"
 
-	"github.com/rliebz/clip"
 	"github.com/spf13/pflag"
+
+	"github.com/rliebz/clip"
 )
 
 // NewFlagSet returns a FlagSet.
 func NewFlagSet(name string) *FlagSet {
 	pfs := pflag.NewFlagSet(name, pflag.ContinueOnError)
-	pfs.SetOutput(ioutil.Discard)
+	pfs.SetOutput(io.Discard)
 
 	return &FlagSet{
 		flagSet: pfs,
@@ -20,7 +21,7 @@ func NewFlagSet(name string) *FlagSet {
 }
 
 // FlagSet represents a set of defined flags.
-type FlagSet struct { // nolint: golint
+type FlagSet struct { //nolint:revive
 	flagSet *pflag.FlagSet
 }
 

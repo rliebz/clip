@@ -14,8 +14,8 @@ type Flag struct {
 	define      func(clip.FlagSet)
 
 	// TODO: These
-	envVar     string // nolint
-	deprecated bool   // nolint
+	envVar     string
+	deprecated bool
 }
 
 var _ clip.Flag = (*Flag)(nil)

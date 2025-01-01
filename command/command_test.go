@@ -7,10 +7,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/rliebz/clip"
-	"github.com/rliebz/clip/flag"
 	"gotest.tools/assert"
 	"gotest.tools/assert/cmp"
+
+	"github.com/rliebz/clip"
+	"github.com/rliebz/clip/flag"
 )
 
 func TestCommandName(t *testing.T) {
@@ -88,7 +89,7 @@ func TestCommandDefaultHelpFlag(t *testing.T) {
 					cmdName,
 					WithActionFlag(
 						tt.flag,
-						func(ctx *Context) error {
+						func(*Context) error {
 							flagActionCalled = true
 							return nil
 						},
@@ -115,7 +116,7 @@ func TestCommandDefaultHelpFlag(t *testing.T) {
 
 func TestCommandAction(t *testing.T) {
 	wasCalled := false
-	action := func(ctx *Context) error {
+	action := func(*Context) error {
 		wasCalled = true
 		return nil
 	}
@@ -131,7 +132,7 @@ func TestCommandActionError(t *testing.T) {
 	err := errors.New("some error")
 
 	wasCalled := false
-	action := func(ctx *Context) error {
+	action := func(*Context) error {
 		wasCalled = true
 		return err
 	}
@@ -145,14 +146,14 @@ func TestCommandActionError(t *testing.T) {
 
 func TestCommandFlagAction(t *testing.T) {
 	wasCalled := false
-	action := func(ctx *Context) error {
+	action := func(*Context) error {
 		wasCalled = true
 		return nil
 	}
 	flagValue := false
-	flag := flag.NewBool(&flagValue, "my-flag")
+	flg := flag.NewBool(&flagValue, "my-flag")
 
-	command := New("foo", WithActionFlag(flag, action))
+	command := New("foo", WithActionFlag(flg, action))
 
 	assert.Check(t, !wasCalled)
 	assert.Check(t, !flagValue)
@@ -164,11 +165,11 @@ func TestCommandFlagAction(t *testing.T) {
 func TestCommandFlagCorrectAction(t *testing.T) {
 	wasCalled := false
 	wrongWasCalled := false
-	action := func(ctx *Context) error {
+	action := func(*Context) error {
 		wasCalled = true
 		return nil
 	}
-	wrongAction := func(ctx *Context) error {
+	wrongAction := func(*Context) error {
 		wrongWasCalled = true
 		return nil
 	}
@@ -202,7 +203,7 @@ func TestCommandFlagActionError(t *testing.T) {
 	err := errors.New("some error")
 
 	wasCalled := false
-	action := func(ctx *Context) error {
+	action := func(*Context) error {
 		wasCalled = true
 		return err
 	}
@@ -259,7 +260,7 @@ func TestSubCommandArgs(t *testing.T) {
 	)
 
 	cmdWasCalled := false
-	cmdAction := func(ctx *Context) error {
+	cmdAction := func(*Context) error {
 		cmdWasCalled = true
 		return nil
 	}
@@ -328,7 +329,7 @@ func TestRun(t *testing.T) {
 	buf := new(bytes.Buffer)
 	command := New(
 		"foo",
-		WithAction(func(ctx *Context) error { return nil }),
+		WithAction(func(*Context) error { return nil }),
 		WithWriter(buf),
 	)
 
@@ -343,7 +344,7 @@ func TestRunError(t *testing.T) {
 	buf := new(bytes.Buffer)
 	command := New(
 		"foo",
-		WithAction(func(ctx *Context) error { return err }),
+		WithAction(func(*Context) error { return err }),
 		WithWriter(buf),
 	)
 
@@ -354,15 +355,18 @@ func TestRunError(t *testing.T) {
 func TestRunExitError(t *testing.T) {
 	defer func(args []string) { os.Args = args }(os.Args)
 	os.Args = []string{"foo"}
-	err := NewError("oops", 3).(exitError)
+	err := NewError("oops", 3)
+
 	buf := new(bytes.Buffer)
 	command := New(
 		"foo",
-		WithAction(func(ctx *Context) error { return err }),
+		WithAction(func(*Context) error { return err }),
 		WithWriter(buf),
 	)
 
-	assert.Check(t, command.Run() == err.ExitCode())
+	var exitErr exitError
+	assert.Assert(t, errors.As(err, &exitErr))
+	assert.Check(t, command.Run() == exitErr.ExitCode())
 	assert.Check(t, cmp.Contains(buf.String(), err.Error()))
 }
 

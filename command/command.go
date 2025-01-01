@@ -13,11 +13,11 @@ import (
 //
 // To create a new command with the default settings, use:
 //
-//   command.New("command-name")
+//	command.New("command-name")
 //
 // rather than:
 //
-//   command.Command{}
+//	command.Command{}
 //
 // The command type is immutable once created, so passing options to New
 // is the only way to configure a command.

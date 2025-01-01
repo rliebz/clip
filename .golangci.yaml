@@ -1,0 +1,98 @@
+issues:
+  max-same-issues: 0
+  exclude-use-default: false
+  exclude:
+    - if-return
+    - should have a package comment
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - dupl
+        - gocognit
+        - gosec
+
+linters:
+  enable:
+    - bidichk
+    - bodyclose
+    - contextcheck
+    - dupl
+    - durationcheck
+    - errcheck
+    - errchkjson
+    - errname
+    - errorlint
+    - gocognit
+    - gocritic
+    - gofumpt
+    - gosec
+    - lll
+    - makezero
+    - mirror
+    - misspell
+    - nakedret
+    - nilerr
+    - noctx
+    - nolintlint
+    - prealloc
+    - predeclared
+    - promlinter
+    - reassign
+    - revive
+    - rowserrcheck
+    - sqlclosecheck
+    - tenv
+    - tparallel
+    - unconvert
+    - unparam
+    - usestdlibvars
+
+linters-settings:
+  errcheck:
+    exclude-functions:
+      # We're only ever writing to stdout/stderr (outside of tests)
+      - fmt.Fprint
+      - fmt.Fprintf
+      - fmt.Fprintln
+
+  gocognit:
+    min-complexity: 10
+
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - style
+      - performance
+      - experimental
+      - opinionated
+    disabled-checks:
+      - paramTypeCombine
+      - ptrToRefParam
+      - whyNoLint # TODO: Address these
+
+  gofumpt:
+    module-path: github.com/rliebz/ghost
+
+  gosec:
+    excludes:
+      - G104 # duplicate of errcheck
+      - G304 # include files from variables on purpose
+      - G307 # duplicate of errcheck
+
+  govet:
+    enable-all: true
+    disable:
+      - fieldalignment
+
+  lll:
+    line-length: 100
+    tab-width: 2
+
+  misspell:
+    locale: US
+
+  nakedret:
+    max-func-lines: 0
+
+  revive:
+    confidence: 0

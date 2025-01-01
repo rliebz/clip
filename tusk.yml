@@ -1,34 +1,17 @@
 ---
 tasks:
-  bootstrap:
-    usage: Set up dependencies for first time use
-    description: |
-      Install all dependencies for building and testing the library.
-    run:
-      - go get -u github.com/golang/dep/cmd/dep
-      - dep ensure
-      - go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
-
   lint:
     usage: Run static analysis
-    description: |
-      Runs golangci-lint using the configuration specified in .golangci.toml
     options:
       fast:
         usage: Only run fast linters
         type: bool
         short: f
-      opts:
-        private: true
-        default:
-          when: fast
-          value: --fast
-    run: golangci-lint run ${opts} ./...
+        rewrite: --fast
+    run: golangci-lint run ${fast} ./...
 
   test:
-    usage: Run go test and gometalinter
-    description: |
-      Runs the full test suite using `go test -cover -race ./...`.
+    usage: Run the tests
     options:
       all:
         usage: Run all tests and linters
@@ -36,27 +19,22 @@ tasks:
         type: bool
       fast:
         usage: Only run fast tests
+        type: bool
         short: f
-        type: bool
-      verbose:
-        usage: Run the tests in verbose mode
-        short: v
-        type: bool
-      verbose-string:
-        private: true
-        default:
-          when: verbose
-          value: -v
-      short-string:
+      fast-flag:
         private: true
         default:
           when: fast
           value: -short
+      verbose:
+        usage: Run the tests in verbose mode
+        short: v
+        type: bool
+        rewrite: -v
     run:
-      - when:
-          equal: {all: true}
+      - when: all
         task:
           name: lint
           options:
             fast: ${fast}
-      - command: go test -cover -race ${verbose-string} ${short-string} ./...
+      - command: go test -race ${fast-flag} ${verbose} ./...
