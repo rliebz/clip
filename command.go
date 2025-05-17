@@ -155,6 +155,40 @@ func CommandWriter(writer io.Writer) CommandOption {
 	}
 }
 
+// CommandFlag adds a flag.
+func CommandFlag(f Flag) CommandOption {
+	return func(c *commandConfig) {
+		f.Attach(c.flagSet)
+		if !f.Hidden() {
+			c.visibleFlags = append(c.visibleFlags, f)
+		}
+	}
+}
+
+// CommandActionFlag adds a flag that performs an action and nothing else.
+// Flags such as --help or --version fall under this category.
+//
+// The action will occur if the flag is passed, regardless of the value, so
+// typically flag.NewToggle will be used here.
+func CommandActionFlag(f Flag, action func(*Context) error) CommandOption {
+	return func(c *commandConfig) {
+		oldAction := c.flagAction
+		f.Attach(c.flagSet)
+		if !f.Hidden() {
+			c.visibleFlags = append(c.visibleFlags, f)
+		}
+		c.flagAction = func(ctx *Context) (bool, error) {
+			if wasSet, err := oldAction(ctx); wasSet {
+				return true, err
+			}
+			if c.flagSet.Changed(f.Name()) {
+				return true, action(ctx)
+			}
+			return false, nil
+		}
+	}
+}
+
 // Name is the name of the command.
 func (cmd *Command) Name() string { return cmd.name }
 
@@ -200,38 +234,4 @@ func (cmd *Command) Run() int {
 
 func (cmd *Command) writer() io.Writer {
 	return cmp.Or[io.Writer](cmd.w, defaultWriter)
-}
-
-// CommandFlag adds a flag.
-func CommandFlag(f Flag) CommandOption {
-	return func(c *commandConfig) {
-		f.Attach(c.flagSet)
-		if !f.Hidden() {
-			c.visibleFlags = append(c.visibleFlags, f)
-		}
-	}
-}
-
-// CommandActionFlag adds a flag that performs an action and nothing else.
-// Flags such as --help or --version fall under this category.
-//
-// The action will occur if the flag is passed, regardless of the value, so
-// typically flag.NewToggle will be used here.
-func CommandActionFlag(f Flag, action func(*Context) error) CommandOption {
-	return func(c *commandConfig) {
-		oldAction := c.flagAction
-		f.Attach(c.flagSet)
-		if !f.Hidden() {
-			c.visibleFlags = append(c.visibleFlags, f)
-		}
-		c.flagAction = func(ctx *Context) (bool, error) {
-			if wasSet, err := oldAction(ctx); wasSet {
-				return true, err
-			}
-			if c.flagSet.Changed(f.Name()) {
-				return true, action(ctx)
-			}
-			return false, nil
-		}
-	}
 }
