@@ -1,6 +1,10 @@
 package flag
 
-import "github.com/rliebz/clip"
+import (
+	"encoding"
+
+	"github.com/rliebz/clip"
+)
 
 // NewToggle creates a new toggle flag.
 // Toggle flags have no associated value, but can be passed like boolean flags
@@ -33,6 +37,21 @@ func NewString(value *string, name string, options ...Option) *Flag {
 
 	f.define = func(fs clip.FlagSet) {
 		fs.DefineString(value, name, f.short, *value, f.summary)
+	}
+
+	return &f
+}
+
+// NewText creates a new flag based on [encoding.TextMarshaler]/[encoding.TextUnmarshaler].
+func NewText(
+	value interface {encoding.TextMarshaler; encoding.TextUnmarshaler},
+	name string,
+	options ...Option,
+) *Flag {
+	f := newFlag(name, options...)
+
+	f.define = func(fs clip.FlagSet) {
+		fs.DefineText(value, name, f.short, value, f.summary)
 	}
 
 	return &f

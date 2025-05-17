@@ -1,6 +1,7 @@
 package flag
 
 import (
+	"encoding"
 	"fmt"
 	"io"
 	"strings"
@@ -45,6 +46,11 @@ func (fs *FlagSet) DefineBool(p *bool, name string, short string, value bool, us
 // DefineString defines a string flag.
 func (fs *FlagSet) DefineString(p *string, name string, short string, value string, usage string) {
 	fs.flagSet.StringVarP(p, name, short, value, usage)
+}
+
+// DefineText defines a flag based on [encoding.TextMarshaler]/[encoding.TextUnmarshaler].
+func (fs *FlagSet) DefineText(p encoding.TextUnmarshaler, name string, short string, value encoding.TextMarshaler, usage string) {
+	fs.flagSet.TextVarP(p, name, short, value, usage)
 }
 
 // Has returns whether a flagset has a flag by a name.

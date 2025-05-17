@@ -1,5 +1,7 @@
 package clip
 
+import "encoding"
+
 // Flag is the interface for any flag.
 type Flag interface {
 	Name() string
@@ -26,6 +28,9 @@ type FlagSet interface {
 
 	// DefineString creates a new string flag.
 	DefineString(p *string, name string, short string, value string, usage string)
+
+	// DefineString creates a new text flag.
+	DefineText(p encoding.TextUnmarshaler, name string, short string, value encoding.TextMarshaler, usage string)
 
 	// Has returns whether a flag exists by name.
 	Has(name string) bool
