@@ -1,14 +1,14 @@
 ---
 tasks:
+  fmt:
+    usage: Format code
+    run:
+      - go mod tidy
+      - golangci-lint fmt
+
   lint:
     usage: Run static analysis
-    options:
-      fast:
-        usage: Only run fast linters
-        type: bool
-        short: f
-        rewrite: --fast
-    run: golangci-lint run ${fast} ./...
+    run: golangci-lint run ./...
 
   test:
     usage: Run the tests
@@ -17,15 +17,6 @@ tasks:
         usage: Run all tests and linters
         short: a
         type: bool
-      fast:
-        usage: Only run fast tests
-        type: bool
-        short: f
-      fast-flag:
-        private: true
-        default:
-          when: fast
-          value: -short
       verbose:
         usage: Run the tests in verbose mode
         short: v
@@ -33,8 +24,5 @@ tasks:
         rewrite: -v
     run:
       - when: all
-        task:
-          name: lint
-          options:
-            fast: ${fast}
-      - command: go test -race ${fast-flag} ${verbose} ./...
+        task: lint
+      - command: go test -race ${verbose} ./...

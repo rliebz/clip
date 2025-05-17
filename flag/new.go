@@ -44,7 +44,10 @@ func NewString(value *string, name string, options ...Option) *Flag {
 
 // NewText creates a new flag based on [encoding.TextMarshaler]/[encoding.TextUnmarshaler].
 func NewText(
-	value interface {encoding.TextMarshaler; encoding.TextUnmarshaler},
+	value interface {
+		encoding.TextMarshaler
+		encoding.TextUnmarshaler
+	},
 	name string,
 	options ...Option,
 ) *Flag {

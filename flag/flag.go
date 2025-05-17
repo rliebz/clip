@@ -1,3 +1,4 @@
+// Package flag defines CLI flags.
 package flag
 
 import (

@@ -57,7 +57,7 @@ func newUsageError(ctx *Context, message string) usageError {
 }
 
 // newUsageErrorf creates an error which causes help to be printed.
-func newUsageErrorf(ctx *Context, format string, a ...interface{}) usageError {
+func newUsageErrorf(ctx *Context, format string, a ...any) usageError {
 	return usageError{
 		context: ctx,
 		message: fmt.Sprintf(format, a...),
@@ -73,6 +73,6 @@ type usageError struct {
 func (e usageError) Error() string { return e.message }
 func (e usageError) ErrorContext() string {
 	b := new(bytes.Buffer)
-	_ = writeCommandHelp(b, e.context) //nolint: gas
+	_ = writeCommandHelp(b, e.context)
 	return b.String()
 }

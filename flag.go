@@ -24,13 +24,31 @@ type FlagSet interface {
 	Changed(name string) bool
 
 	// DefineBool creates a new boolean flag.
-	DefineBool(p *bool, name string, short string, value bool, usage string)
+	DefineBool(
+		p *bool,
+		name string,
+		short string,
+		value bool,
+		usage string,
+	)
 
 	// DefineString creates a new string flag.
-	DefineString(p *string, name string, short string, value string, usage string)
+	DefineString(
+		p *string,
+		name string,
+		short string,
+		value string,
+		usage string,
+	)
 
 	// DefineString creates a new text flag.
-	DefineText(p encoding.TextUnmarshaler, name string, short string, value encoding.TextMarshaler, usage string)
+	DefineText(
+		p encoding.TextUnmarshaler,
+		name string,
+		short string,
+		value encoding.TextMarshaler,
+		usage string,
+	)
 
 	// Has returns whether a flag exists by name.
 	Has(name string) bool

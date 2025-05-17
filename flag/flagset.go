@@ -22,7 +22,7 @@ func NewFlagSet(name string) *FlagSet {
 }
 
 // FlagSet represents a set of defined flags.
-type FlagSet struct { //nolint:revive
+type FlagSet struct { //nolint:revive // TODO: Probably changing package structure
 	flagSet *pflag.FlagSet
 }
 
@@ -39,17 +39,35 @@ func (fs *FlagSet) Changed(name string) bool {
 }
 
 // DefineBool defines a bool flag.
-func (fs *FlagSet) DefineBool(p *bool, name string, short string, value bool, usage string) {
+func (fs *FlagSet) DefineBool(
+	p *bool,
+	name string,
+	short string,
+	value bool,
+	usage string,
+) {
 	fs.flagSet.BoolVarP(p, name, short, value, usage)
 }
 
 // DefineString defines a string flag.
-func (fs *FlagSet) DefineString(p *string, name string, short string, value string, usage string) {
+func (fs *FlagSet) DefineString(
+	p *string,
+	name string,
+	short string,
+	value string,
+	usage string,
+) {
 	fs.flagSet.StringVarP(p, name, short, value, usage)
 }
 
 // DefineText defines a flag based on [encoding.TextMarshaler]/[encoding.TextUnmarshaler].
-func (fs *FlagSet) DefineText(p encoding.TextUnmarshaler, name string, short string, value encoding.TextMarshaler, usage string) {
+func (fs *FlagSet) DefineText(
+	p encoding.TextUnmarshaler,
+	name string,
+	short string,
+	value encoding.TextMarshaler,
+	usage string,
+) {
 	fs.flagSet.TextVarP(p, name, short, value, usage)
 }
 
