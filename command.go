@@ -1,12 +1,15 @@
 package clip
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"io"
 	"log"
 	"os"
 )
+
+var defaultWriter = os.Stdout
 
 // Command is a command or sub-command that can be run from the command-line.
 //
@@ -26,7 +29,7 @@ type Command struct {
 	description string
 	hidden      bool
 	action      func(*Context) error
-	writer      io.Writer
+	w           io.Writer // TODO: split stdout/stderr?
 
 	flagSet         FlagSet
 	visibleCommands []*Command
@@ -44,19 +47,8 @@ func NewCommand(name string, options ...CommandOption) *Command {
 	c := commandConfig{
 		action:        printCommandHelp,
 		subCommandMap: map[string]*Command{},
-		// TODO: I'm pretty sure this means if we set the writer at the root
-		// command but not sub-commands that we end up using os.Stdout on
-		// sub-commands, which surprises but does not delight.
-		//
-		// Resolution is probably some combination of:
-		//  1. Leave the value empty so we can differentiate whether os.Stdout
-		//     was explicitly passed or not. Or maybe add a boolean flag to track
-		//     so our logic doesn't have to use [cmp.Or] or whatever.
-		//  2. When a sub-command is... registered? invoked? use the parent's
-		//     writer if one hasn't been explicitly specified.
-		writer:     os.Stdout, // TODO: stderr + stdout
-		flagSet:    NewFlagSet(name),
-		flagAction: func(*Context) (bool, error) { return false, nil },
+		flagSet:       NewFlagSet(name),
+		flagAction:    func(*Context) (bool, error) { return false, nil },
 	}
 
 	// Overwrite defaults with passed options
@@ -72,7 +64,7 @@ func NewCommand(name string, options ...CommandOption) *Command {
 		description: c.description,
 		hidden:      c.hidden,
 		action:      c.action,
-		writer:      c.writer,
+		w:           c.writer,
 
 		flagSet:         c.flagSet,
 		visibleCommands: c.visibleCommands,
@@ -198,12 +190,16 @@ func (cmd *Command) Execute(args []string) error {
 // For the root command in most applications, the args will be os.Args.
 func (cmd *Command) Run() int {
 	if err := cmd.Execute(os.Args); err != nil {
-		l := log.New(cmd.writer, "", 0)
+		l := log.New(cmd.writer(), "", 0)
 		printError(l, err)
 		return getExitCode(err)
 	}
 
 	return 0
+}
+
+func (cmd *Command) writer() io.Writer {
+	return cmp.Or[io.Writer](cmd.w, defaultWriter)
 }
 
 // CommandFlag adds a flag.

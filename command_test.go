@@ -55,7 +55,7 @@ func TestCommandWriter(t *testing.T) {
 
 	writer := new(bytes.Buffer)
 	command := NewCommand("foo", CommandWriter(writer))
-	g.Should(be.Equal[io.Writer](command.writer, writer))
+	g.Should(be.Equal[io.Writer](command.writer(), writer))
 }
 
 func TestCommandExecuteHelp(t *testing.T) {

@@ -25,7 +25,12 @@ func (ctx *Context) Description() string {
 
 // Writer is the writer for the command.
 func (ctx *Context) Writer() io.Writer {
-	return ctx.command.writer
+	for cur := ctx; cur != nil; cur = cur.parent {
+		if cur.command.w != nil {
+			return cur.command.w
+		}
+	}
+	return defaultWriter
 }
 
 // Parent is the context's parent context.
