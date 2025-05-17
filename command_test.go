@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"testing"
 
@@ -597,6 +598,125 @@ func TestParse(t *testing.T) {
 			g.Should(be.Equal(parentSFlag, tt.parentSFlag))
 		})
 	}
+}
+
+func TestParseEnvVars(t *testing.T) {
+	t.Run("use env vars", func(t *testing.T) {
+		g := ghost.New(t)
+
+		var name string
+		var level slog.LevelVar
+		var on bool
+
+		t.Setenv("FLAG_NAME", "alice")
+		t.Setenv("FLAG_LEVEL", "ERROR")
+		t.Setenv("FLAG_ON", "1")
+
+		cmd := NewCommand(
+			"foo",
+			CommandFlag(NewStringFlag(
+				&name,
+				"name",
+				// Skip unset values, prefer earlier values
+				FlagEnv("VALUE_NOT_SET", "FLAG_NAME", "FLAG_LEVEL"),
+			)),
+			CommandFlag(NewTextFlag(
+				&level,
+				"level",
+				FlagEnv("FLAG_LEVEL"),
+			)),
+			CommandFlag(NewBoolFlag(
+				&on,
+				"on",
+				FlagEnv("FLAG_ON"),
+			)),
+		)
+
+		g.NoError(cmd.Execute([]string{"foo"}))
+
+		g.Should(be.Equal(name, "alice"))
+		g.Should(be.Equal(level.Level(), slog.LevelError))
+		g.Should(be.True(on))
+	})
+
+	t.Run("prefer cli flags", func(t *testing.T) {
+		g := ghost.New(t)
+
+		var name string
+		var level slog.LevelVar
+		var on bool
+
+		t.Setenv("FLAG_NAME", "alice")
+		t.Setenv("FLAG_LEVEL", "ERROR")
+		t.Setenv("FLAG_ON", "1")
+
+		cmd := NewCommand(
+			"foo",
+			CommandFlag(NewStringFlag(
+				&name,
+				"name",
+				FlagEnv("FLAG_NAME"),
+			)),
+			CommandFlag(NewTextFlag(
+				&level,
+				"level",
+				FlagEnv("FLAG_LEVEL"),
+			)),
+			CommandFlag(NewBoolFlag(
+				&on,
+				"on",
+				FlagEnv("FLAG_ON"),
+			)),
+		)
+
+		g.NoError(cmd.Execute([]string{
+			"foo",
+			"--name", "bob",
+			"--level", "WARN",
+			"--on=false",
+		}))
+
+		g.Should(be.Equal(name, "bob"))
+		g.Should(be.Equal(level.Level(), slog.LevelWarn))
+		g.Should(be.False(on))
+	})
+
+	t.Run("invalid values", func(t *testing.T) {
+		g := ghost.New(t)
+
+		var name string
+		var level slog.LevelVar
+		var on bool
+
+		t.Setenv("FLAG_NAME", "alice")
+		t.Setenv("FLAG_LEVEL", "ERROR")
+		t.Setenv("FLAG_ON", "hrm")
+
+		cmd := NewCommand(
+			"foo",
+			CommandFlag(NewStringFlag(
+				&name,
+				"name",
+				FlagEnv("FLAG_NAME"),
+			)),
+			CommandFlag(NewTextFlag(
+				&level,
+				"level",
+				FlagEnv("FLAG_LEVEL"),
+			)),
+			CommandFlag(NewBoolFlag(
+				&on,
+				"on",
+				FlagEnv("FLAG_ON"),
+			)),
+		)
+
+		err := cmd.Execute([]string{"foo"})
+		g.Should(be.ErrorEqual(err,
+			`invalid argument "hrm" for "--on" flag: strconv.ParseBool: `+
+				`parsing "hrm": invalid syntax`,
+		))
+	})
 }
 
 func TestParseError(t *testing.T) {

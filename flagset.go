@@ -4,6 +4,8 @@ import (
 	"encoding"
 	"fmt"
 	"io"
+	"iter"
+	"os"
 	"strings"
 
 	"github.com/spf13/pflag"
@@ -24,6 +26,7 @@ type FlagSet interface {
 		short string,
 		value bool,
 		usage string,
+		env []string,
 	)
 
 	// DefineString creates a new string flag.
@@ -33,6 +36,7 @@ type FlagSet interface {
 		short string,
 		value string,
 		usage string,
+		env []string,
 	)
 
 	// DefineString creates a new text flag.
@@ -42,6 +46,7 @@ type FlagSet interface {
 		short string,
 		value encoding.TextMarshaler,
 		usage string,
+		env []string,
 	)
 
 	// Has returns whether a flag exists by name.
@@ -52,6 +57,9 @@ type FlagSet interface {
 
 	// Parse parses a set of command-line arguments.
 	Parse(args []string) error
+
+	// private prevents custom implementations
+	private()
 }
 
 // NewFlagSet returns a FlagSet.
@@ -60,12 +68,14 @@ func NewFlagSet(name string) FlagSet {
 	pfs.SetOutput(io.Discard)
 
 	return &flagSetImpl{
-		flagSet: pfs,
+		flagSet:   pfs,
+		nameToEnv: make(map[string][]string),
 	}
 }
 
 type flagSetImpl struct {
-	flagSet *pflag.FlagSet
+	flagSet   *pflag.FlagSet
+	nameToEnv map[string][]string
 }
 
 // Args returns non-flag arguments.
@@ -85,8 +95,10 @@ func (fs *flagSetImpl) DefineBool(
 	short string,
 	value bool,
 	usage string,
+	env []string,
 ) {
 	fs.flagSet.BoolVarP(p, name, short, value, usage)
+	fs.nameToEnv[name] = env
 }
 
 // DefineString defines a string flag.
@@ -96,8 +108,10 @@ func (fs *flagSetImpl) DefineString(
 	short string,
 	value string,
 	usage string,
+	env []string,
 ) {
 	fs.flagSet.StringVarP(p, name, short, value, usage)
+	fs.nameToEnv[name] = env
 }
 
 // DefineText defines a flag based on [encoding.TextMarshaler] and
@@ -108,8 +122,10 @@ func (fs *flagSetImpl) DefineText(
 	short string,
 	value encoding.TextMarshaler,
 	usage string,
+	env []string,
 ) {
 	fs.flagSet.TextVarP(p, name, short, value, usage)
+	fs.nameToEnv[name] = env
 }
 
 // Has returns whether a flagset has a flag by a name.
@@ -133,7 +149,46 @@ func (fs *flagSetImpl) Parse(args []string) error {
 		args = append(args[:i], append([]string{"--"}, args[i:]...)...)
 	}
 
-	return fs.flagSet.Parse(args)
+	if err := fs.flagSet.Parse(args); err != nil {
+		return err
+	}
+
+	for f := range fs.all() {
+		if err := fs.parseEnv(f); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// all returns an iterator over all registered flags.
+func (fs *flagSetImpl) all() iter.Seq[*pflag.Flag] {
+	return func(yield func(*pflag.Flag) bool) {
+		done := false
+
+		fs.flagSet.VisitAll(func(f *pflag.Flag) {
+			if done {
+				return
+			}
+
+			done = !yield(f)
+		})
+	}
+}
+
+func (fs *flagSetImpl) parseEnv(f *pflag.Flag) error {
+	if f.Changed {
+		return nil
+	}
+
+	for _, env := range fs.nameToEnv[f.Name] {
+		if v, ok := os.LookupEnv(env); ok {
+			return fs.flagSet.Set(f.Name, v)
+		}
+	}
+
+	return nil
 }
 
 // nextArgIndex finds the index of the next arg in the arg list.
@@ -175,6 +230,8 @@ func (fs *flagSetImpl) getFlagFromArg(arg string) (*pflag.Flag, error) {
 	}
 	return nil, fmt.Errorf("unknown shorthand flag: '%s' in %s", fname, arg)
 }
+
+func (fs *flagSetImpl) private() {}
 
 func isFlag(arg string) bool {
 	return strings.HasPrefix(arg, "-")

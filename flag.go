@@ -24,8 +24,10 @@ type flagImpl struct {
 	hidden      bool
 	attach      func(FlagSet)
 
-	// TODO: These
-	envVar     string
+	// TODO: Help text
+	env []string
+
+	// TODO: This
 	deprecated bool
 }
 
@@ -38,7 +40,7 @@ func (f *flagImpl) Short() string { return f.short }
 // Summary returns a one-line description of the flag.
 func (f *flagImpl) Summary() string { return f.summary }
 
-// Description returns a multi-line description of the command.
+// Description returns a multi-line description of the flag.
 func (f *flagImpl) Description() string { return f.description }
 
 // Hidden returns whether a flag should be hidden from help and tab completion.
@@ -57,7 +59,7 @@ func NewToggleFlag(name string, options ...FlagOption) Flag {
 
 	f.attach = func(fs FlagSet) {
 		p := new(bool)
-		fs.DefineBool(p, name, f.short, false, f.summary)
+		fs.DefineBool(p, name, f.short, false, f.summary, f.env)
 	}
 
 	return &f
@@ -68,7 +70,7 @@ func NewBoolFlag(value *bool, name string, options ...FlagOption) Flag {
 	f := newFlag(name, options...)
 
 	f.attach = func(fs FlagSet) {
-		fs.DefineBool(value, name, f.short, *value, f.summary)
+		fs.DefineBool(value, name, f.short, *value, f.summary, f.env)
 	}
 
 	return &f
@@ -79,7 +81,7 @@ func NewStringFlag(value *string, name string, options ...FlagOption) Flag {
 	f := newFlag(name, options...)
 
 	f.attach = func(fs FlagSet) {
-		fs.DefineString(value, name, f.short, *value, f.summary)
+		fs.DefineString(value, name, f.short, *value, f.summary, f.env)
 	}
 
 	return &f
@@ -98,7 +100,7 @@ func NewTextFlag(
 	f := newFlag(name, options...)
 
 	f.attach = func(fs FlagSet) {
-		fs.DefineText(value, name, f.short, value, f.summary)
+		fs.DefineText(value, name, f.short, value, f.summary, f.env)
 	}
 
 	return &f
@@ -111,7 +113,7 @@ type flagConfig struct {
 	short       string
 	summary     string
 	description string
-	envVar      string
+	env         []string
 	deprecated  bool
 	hidden      bool
 }
@@ -127,7 +129,7 @@ func newFlag(name string, options ...FlagOption) flagImpl {
 		short:       c.short,
 		summary:     c.summary,
 		description: c.description,
-		envVar:      c.envVar,
+		env:         c.env,
 		deprecated:  c.deprecated,
 		hidden:      c.hidden,
 	}
@@ -157,5 +159,14 @@ func FlagSummary(summary string) FlagOption {
 func FlagDescription(description string) FlagOption {
 	return func(c *flagConfig) {
 		c.description = description
+	}
+}
+
+// FlagEnv sets the list of environment variables for a flag.
+//
+// Successive calls will replace earlier values.
+func FlagEnv(env ...string) FlagOption {
+	return func(c *flagConfig) {
+		c.env = env
 	}
 }
