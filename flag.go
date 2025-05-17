@@ -85,7 +85,8 @@ func NewStringFlag(value *string, name string, options ...FlagOption) Flag {
 	return &f
 }
 
-// NewTextFlag creates a new flag based on [encoding.TextMarshaler]/[encoding.TextUnmarshaler].
+// NewTextFlag creates a new flag based on [encoding.TextMarshaler] and
+// [encoding.TextUnmarshaler].
 func NewTextFlag(
 	value interface {
 		encoding.TextMarshaler

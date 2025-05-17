@@ -76,7 +76,7 @@ declare sub-commands before their parent commands:
 hello := clip.NewCommand(
 	"hello",
 	clip.CommandSummary("Greet the world"),
-	clip.CommandAction(func(ctx *command.Context) error {
+	clip.CommandAction(func(ctx *clip.Context) error {
 	  fmt.Println("Hello, world!")
 	  return nil
 	}),
@@ -135,7 +135,7 @@ var args []string
 hello := clip.NewCommand(
 	"hello",
 	clip.CommandArgs(&args),
-	clip.CommandAction(func (ctx *command.Context) error {
+	clip.CommandAction(func (ctx *clip.Context) error {
 	  fmt.Println("Args: ", args)
 	  return nil
 	}),
@@ -160,7 +160,7 @@ hello := clip.NewCommand(
 			clip.ArgValues([]string{"Alice", "Bruce", "Carl"}),
 		),
 	),
-	clip.CommandAction(func(ctx *command.Context) error {
+	clip.CommandAction(func(ctx *clip.Context) error {
 		greeting := fmt.Sprintf("Hello, %s\n", name)
 		fmt.Println(greeting)
 		return nil
@@ -213,7 +213,7 @@ app := clip.NewCommand(
 			clip.FlagShort("V"),
 			clip.FlagSummary("Print the version and exit"),
 		),
-		func(ctx *command.Context) error {
+		func(ctx *clip.Context) error {
 			fmt.Println(version)
 			return nil
 		},
@@ -243,7 +243,7 @@ hello := clip.NewCommand(
 			clip.FlagSummary("Who to greet"),
 		),
 	),
-	clip.CommandAction(func(ctx *command.Context) error {
+	clip.CommandAction(func(ctx *clip.Context) error {
 		greeting := fmt.Sprintf("Hello, %s!", name)
 		if loud {
 			greeting = strings.ToUpper(greeting)

@@ -7,8 +7,8 @@ import (
 	"log"
 )
 
-// NewError creates an error with an associated exit code.
-func NewError(message string, code int) error {
+// NewExitError creates an error with an associated exit code.
+func NewExitError(message string, code int) error {
 	return exitError{
 		code:    code,
 		message: message,

@@ -54,7 +54,7 @@ func NewCommand(name string, options ...CommandOption) *Command {
 		//     so our logic doesn't have to use [cmp.Or] or whatever.
 		//  2. When a sub-command is... registered? invoked? use the parent's
 		//     writer if one hasn't been explicitly specified.
-		writer:     os.Stdout,
+		writer:     os.Stdout, // TODO: stderr + stdout
 		flagSet:    NewFlagSet(name),
 		flagAction: func(*Context) (bool, error) { return false, nil },
 	}
@@ -111,7 +111,7 @@ func applyConditionalDefaults(c *commandConfig) {
 			options = append(options, FlagShort("h"))
 		}
 
-		f := NewToggle("help", options...)
+		f := NewToggleFlag("help", options...)
 		CommandActionFlag(f, printCommandHelp)(c)
 	}
 }

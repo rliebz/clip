@@ -91,16 +91,16 @@ func TestCommandDefaultHelpFlag(t *testing.T) {
 		passed   string
 		behavior int
 	}{
-		{NewToggle("help"), "--help", callsAction},
-		{NewToggle("help"), "-h", hasError},
-		{NewToggle("help", FlagShort("h")), "--help", callsAction},
-		{NewToggle("help", FlagShort("h")), "-h", callsAction},
-		{NewToggle("help", FlagShort("n")), "--help", callsAction},
-		{NewToggle("help", FlagShort("n")), "-h", hasError},
-		{NewToggle("not-help"), "--help", callsHelp},
-		{NewToggle("not-help"), "-h", callsHelp},
-		{NewToggle("not-help", FlagShort("h")), "--help", callsHelp},
-		{NewToggle("not-help", FlagShort("h")), "-h", callsAction},
+		{NewToggleFlag("help"), "--help", callsAction},
+		{NewToggleFlag("help"), "-h", hasError},
+		{NewToggleFlag("help", FlagShort("h")), "--help", callsAction},
+		{NewToggleFlag("help", FlagShort("h")), "-h", callsAction},
+		{NewToggleFlag("help", FlagShort("n")), "--help", callsAction},
+		{NewToggleFlag("help", FlagShort("n")), "-h", hasError},
+		{NewToggleFlag("not-help"), "--help", callsHelp},
+		{NewToggleFlag("not-help"), "-h", callsHelp},
+		{NewToggleFlag("not-help", FlagShort("h")), "--help", callsHelp},
+		{NewToggleFlag("not-help", FlagShort("h")), "-h", callsAction},
 	}
 
 	for _, tt := range tests {
@@ -186,7 +186,7 @@ func TestCommandFlagAction(t *testing.T) {
 		return nil
 	}
 	flagValue := false
-	flg := NewBool(&flagValue, "my-flag")
+	flg := NewBoolFlag(&flagValue, "my-flag")
 
 	command := NewCommand("foo", CommandActionFlag(flg, action))
 	g.Should(be.False(wasCalled))
@@ -213,11 +213,11 @@ func TestCommandFlagCorrectAction(t *testing.T) {
 	}
 
 	notCalledValue := false
-	notCalledFlag := NewBool(&notCalledValue, "not-called")
+	notCalledFlag := NewBoolFlag(&notCalledValue, "not-called")
 	correctValue := false
-	correctFlag := NewBool(&correctValue, "my-flag")
+	correctFlag := NewBoolFlag(&correctValue, "my-flag")
 	secondValue := false
-	secondFlag := NewBool(&secondValue, "second-flag")
+	secondFlag := NewBoolFlag(&secondValue, "second-flag")
 
 	subCommand := NewCommand("bar", CommandAction(wrongAction))
 
@@ -250,7 +250,7 @@ func TestCommandFlagActionError(t *testing.T) {
 	}
 
 	flagValue := false
-	f := NewBool(&flagValue, "my-flag")
+	f := NewBoolFlag(&flagValue, "my-flag")
 
 	command := NewCommand("foo", CommandActionFlag(f, action))
 
@@ -424,7 +424,7 @@ func TestRunExitError(t *testing.T) {
 	defer func(args []string) { os.Args = args }(os.Args)
 	os.Args = []string{"foo"}
 
-	err := NewError("oops", 3)
+	err := NewExitError("oops", 3)
 	buf := new(bytes.Buffer)
 	command := NewCommand(
 		"foo",
@@ -565,8 +565,8 @@ func TestParse(t *testing.T) {
 			childCalled := false
 			child := NewCommand(
 				"child",
-				CommandFlag(NewString(&childSFlag, "sflag", FlagShort("s"))),
-				CommandFlag(NewBool(&childFlag, "flag", FlagShort("f"))),
+				CommandFlag(NewStringFlag(&childSFlag, "sflag", FlagShort("s"))),
+				CommandFlag(NewBoolFlag(&childFlag, "flag", FlagShort("f"))),
 				CommandAction(func(*Context) error {
 					childCalled = true
 					return nil
@@ -578,8 +578,8 @@ func TestParse(t *testing.T) {
 			parentCalled := false
 			cmd := NewCommand(
 				"foo",
-				CommandFlag(NewString(&parentSFlag, "sflag", FlagShort("s"))),
-				CommandFlag(NewBool(&parentFlag, "flag", FlagShort("f"))),
+				CommandFlag(NewStringFlag(&parentSFlag, "sflag", FlagShort("s"))),
+				CommandFlag(NewBoolFlag(&parentFlag, "flag", FlagShort("f"))),
 				CommandSubCommand(child),
 				CommandAction(func(*Context) error {
 					parentCalled = true
@@ -642,7 +642,7 @@ func TestParseError(t *testing.T) {
 			childCalled := false
 			child := NewCommand(
 				"child",
-				CommandFlag(NewBool(&childFlag, "flag")),
+				CommandFlag(NewBoolFlag(&childFlag, "flag")),
 				CommandAction(func(*Context) error {
 					childCalled = true
 					return nil
@@ -653,7 +653,7 @@ func TestParseError(t *testing.T) {
 			parentCalled := false
 			cmd := NewCommand(
 				"foo",
-				CommandFlag(NewBool(&parentFlag, "flag")),
+				CommandFlag(NewBoolFlag(&parentFlag, "flag")),
 				CommandSubCommand(child),
 				CommandAction(func(*Context) error {
 					parentCalled = true
