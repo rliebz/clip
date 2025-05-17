@@ -100,7 +100,8 @@ func (fs *flagSetImpl) DefineString(
 	fs.flagSet.StringVarP(p, name, short, value, usage)
 }
 
-// DefineText defines a flag based on [encoding.TextMarshaler]/[encoding.TextUnmarshaler].
+// DefineText defines a flag based on [encoding.TextMarshaler] and
+// [encoding.TextUnmarshaler].
 func (fs *flagSetImpl) DefineText(
 	p encoding.TextUnmarshaler,
 	name string,

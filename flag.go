@@ -9,10 +9,10 @@ type Flag interface {
 	Summary() string
 	Hidden() bool
 
-	// Define adds the flag to a given flagset.
-	// This method is invoked when creating a new command before the flags are
-	// parsed.
-	Define(FlagSet)
+	// Attach the flag to a given flagset.
+	//
+	// This method is invoked before flags are parsed.
+	Attach(FlagSet)
 }
 
 // flagImpl is an immutable command-line flag.
@@ -22,7 +22,7 @@ type flagImpl struct {
 	summary     string
 	description string
 	hidden      bool
-	define      func(FlagSet)
+	attach      func(FlagSet)
 
 	// TODO: These
 	envVar     string
@@ -44,9 +44,9 @@ func (f *flagImpl) Description() string { return f.description }
 // Hidden returns whether a flag should be hidden from help and tab completion.
 func (f *flagImpl) Hidden() bool { return f.hidden }
 
-// Define attaches a flag to a flagset.
-func (f *flagImpl) Define(fs FlagSet) {
-	f.define(fs)
+// Attach attaches a flag to a flagset.
+func (f *flagImpl) Attach(fs FlagSet) {
+	f.attach(fs)
 }
 
 // NewToggleFlag creates a new toggle flag.
@@ -55,7 +55,7 @@ func (f *flagImpl) Define(fs FlagSet) {
 func NewToggleFlag(name string, options ...FlagOption) Flag {
 	f := newFlag(name, options...)
 
-	f.define = func(fs FlagSet) {
+	f.attach = func(fs FlagSet) {
 		p := new(bool)
 		fs.DefineBool(p, name, f.short, false, f.summary)
 	}
@@ -67,7 +67,7 @@ func NewToggleFlag(name string, options ...FlagOption) Flag {
 func NewBoolFlag(value *bool, name string, options ...FlagOption) Flag {
 	f := newFlag(name, options...)
 
-	f.define = func(fs FlagSet) {
+	f.attach = func(fs FlagSet) {
 		fs.DefineBool(value, name, f.short, *value, f.summary)
 	}
 
@@ -78,7 +78,7 @@ func NewBoolFlag(value *bool, name string, options ...FlagOption) Flag {
 func NewStringFlag(value *string, name string, options ...FlagOption) Flag {
 	f := newFlag(name, options...)
 
-	f.define = func(fs FlagSet) {
+	f.attach = func(fs FlagSet) {
 		fs.DefineString(value, name, f.short, *value, f.summary)
 	}
 
@@ -97,7 +97,7 @@ func NewTextFlag(
 ) Flag {
 	f := newFlag(name, options...)
 
-	f.define = func(fs FlagSet) {
+	f.attach = func(fs FlagSet) {
 		fs.DefineText(value, name, f.short, value, f.summary)
 	}
 

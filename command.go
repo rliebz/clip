@@ -209,7 +209,7 @@ func (cmd *Command) Run() int {
 // CommandFlag adds a flag.
 func CommandFlag(f Flag) CommandOption {
 	return func(c *commandConfig) {
-		f.Define(c.flagSet)
+		f.Attach(c.flagSet)
 		if !f.Hidden() {
 			c.visibleFlags = append(c.visibleFlags, f)
 		}
@@ -224,7 +224,7 @@ func CommandFlag(f Flag) CommandOption {
 func CommandActionFlag(f Flag, action func(*Context) error) CommandOption {
 	return func(c *commandConfig) {
 		oldAction := c.flagAction
-		f.Define(c.flagSet)
+		f.Attach(c.flagSet)
 		if !f.Hidden() {
 			c.visibleFlags = append(c.visibleFlags, f)
 		}
