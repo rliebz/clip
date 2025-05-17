@@ -32,7 +32,7 @@ func main() {
 
 By default, commands with no action specified print the help documentation:
 
-```
+```console
 $ my-app
 my-app
 
@@ -57,7 +57,7 @@ os.Exit(app.Run())
 
 Now when running my-app:
 
-```
+```console
 $ my-app
 my-app - A command-line application
 
@@ -96,7 +96,7 @@ os.Exit(app.Run())
 
 Sub-commands also appear in the help documentation:
 
-```
+```console
 $ my-app
 my-app - A command-line application
 
@@ -117,7 +117,7 @@ Options:
 
 And the command can be run:
 
-```
+```console
 $ my-app hello
 Hello, world!
 ```
@@ -170,7 +170,7 @@ hello := clip.NewCommand(
 
 This produces an app with the following behavior:
 
-```
+```console
 $ my-app hello --help
 my-app hello - Greet the world
 
@@ -259,7 +259,7 @@ Flags are defined using [POSIX/GNU-style flags][gnu-flags], with `--foo` for a
 flag named `"foo"`, and a short, one character flag prefixed with `-` if
 specified.
 
-```
+```console
 $ my-app hello --help
 my-app hello - Greet the world
 
