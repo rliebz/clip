@@ -49,10 +49,10 @@ func (f *flagImpl) Define(fs FlagSet) {
 	f.define(fs)
 }
 
-// NewToggle creates a new toggle flag.
+// NewToggleFlag creates a new toggle flag.
 // Toggle flags have no associated value, but can be passed like boolean flags
 // to toggle something on. This is the simplest way to create an action flag.
-func NewToggle(name string, options ...FlagOption) Flag {
+func NewToggleFlag(name string, options ...FlagOption) Flag {
 	f := newFlag(name, options...)
 
 	f.define = func(fs FlagSet) {
@@ -63,8 +63,8 @@ func NewToggle(name string, options ...FlagOption) Flag {
 	return &f
 }
 
-// NewBool creates a new boolean flag.
-func NewBool(value *bool, name string, options ...FlagOption) Flag {
+// NewBoolFlag creates a new boolean flag.
+func NewBoolFlag(value *bool, name string, options ...FlagOption) Flag {
 	f := newFlag(name, options...)
 
 	f.define = func(fs FlagSet) {
@@ -74,8 +74,8 @@ func NewBool(value *bool, name string, options ...FlagOption) Flag {
 	return &f
 }
 
-// NewString creates a new string flag.
-func NewString(value *string, name string, options ...FlagOption) Flag {
+// NewStringFlag creates a new string flag.
+func NewStringFlag(value *string, name string, options ...FlagOption) Flag {
 	f := newFlag(name, options...)
 
 	f.define = func(fs FlagSet) {
@@ -85,8 +85,8 @@ func NewString(value *string, name string, options ...FlagOption) Flag {
 	return &f
 }
 
-// NewText creates a new flag based on [encoding.TextMarshaler]/[encoding.TextUnmarshaler].
-func NewText(
+// NewTextFlag creates a new flag based on [encoding.TextMarshaler]/[encoding.TextUnmarshaler].
+func NewTextFlag(
 	value interface {
 		encoding.TextMarshaler
 		encoding.TextUnmarshaler
@@ -104,9 +104,9 @@ func NewText(
 }
 
 // FlagOption is an option for creating a Flag.
-type FlagOption func(*config)
+type FlagOption func(*flagConfig)
 
-type config struct {
+type flagConfig struct {
 	short       string
 	summary     string
 	description string
@@ -116,7 +116,7 @@ type config struct {
 }
 
 func newFlag(name string, options ...FlagOption) flagImpl {
-	c := config{}
+	c := flagConfig{}
 	for _, o := range options {
 		o(&c)
 	}
@@ -133,28 +133,28 @@ func newFlag(name string, options ...FlagOption) flagImpl {
 }
 
 // FlagHidden prevents the flag from being shown.
-func FlagHidden(c *config) {
+func FlagHidden(c *flagConfig) {
 	c.hidden = true
 }
 
 // FlagShort adds a short name to a flag.
 // Panics if the name is not exactly one ASCII character.
 func FlagShort(name string) FlagOption {
-	return func(c *config) {
+	return func(c *flagConfig) {
 		c.short = name
 	}
 }
 
 // FlagSummary adds a one-line description to a flag.
 func FlagSummary(summary string) FlagOption {
-	return func(c *config) {
+	return func(c *flagConfig) {
 		c.summary = summary
 	}
 }
 
-// WithDescription adds a multi-line description to a flag.
-func WithDescription(description string) FlagOption {
-	return func(c *config) {
+// FlagDescription adds a multi-line description to a flag.
+func FlagDescription(description string) FlagOption {
+	return func(c *flagConfig) {
 		c.description = description
 	}
 }

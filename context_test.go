@@ -1,4 +1,4 @@
-package command
+package clip
 
 import (
 	"fmt"
@@ -19,14 +19,14 @@ func TestContextParent(t *testing.T) {
 		return nil
 	}
 
-	child := New(
+	child := NewCommand(
 		"foo",
-		WithAction(action),
+		CommandAction(action),
 	)
 
-	parent := New(
+	parent := NewCommand(
 		"parent",
-		WithCommand(child),
+		CommandSubCommand(child),
 	)
 
 	args := []string{parent.Name(), child.Name()}
@@ -46,9 +46,9 @@ func TestContextParentNil(t *testing.T) {
 		return nil
 	}
 
-	cmd := New(
+	cmd := NewCommand(
 		"foo",
-		WithAction(action),
+		CommandAction(action),
 	)
 
 	g.NoError(cmd.Execute([]string{cmd.Name()}))
@@ -62,9 +62,9 @@ func TestContextRoot(t *testing.T) {
 		return nil
 	}
 
-	foo := New("foo", WithAction(action))
-	bar := New("bar", WithCommand(foo))
-	baz := New("baz", WithCommand(bar))
+	foo := NewCommand("foo", CommandAction(action))
+	bar := NewCommand("bar", CommandSubCommand(foo))
+	baz := NewCommand("baz", CommandSubCommand(bar))
 
 	tests := []struct {
 		args []string

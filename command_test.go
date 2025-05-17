@@ -1,4 +1,4 @@
-package command
+package clip
 
 import (
 	"bytes"
@@ -10,14 +10,12 @@ import (
 
 	"github.com/rliebz/ghost"
 	"github.com/rliebz/ghost/be"
-
-	"github.com/rliebz/clip"
 )
 
 func TestNew(t *testing.T) {
 	tests := []struct {
 		name            string
-		opts            []Option
+		opts            []CommandOption
 		wantDescription string
 		wantSummary     string
 	}{
@@ -26,15 +24,15 @@ func TestNew(t *testing.T) {
 		},
 		{
 			name: "WithSummary",
-			opts: []Option{
-				WithSummary("some summary"),
+			opts: []CommandOption{
+				CommandSummary("some summary"),
 			},
 			wantSummary: "some summary",
 		},
 		{
 			name: "WithDescription",
-			opts: []Option{
-				WithDescription("some description"),
+			opts: []CommandOption{
+				CommandDescription("some description"),
 			},
 			wantDescription: "some description",
 		},
@@ -44,7 +42,7 @@ func TestNew(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			g := ghost.New(t)
 
-			command := New("foo", tt.opts...)
+			command := NewCommand("foo", tt.opts...)
 			g.Should(be.Equal(command.Name(), "foo"))
 			g.Should(be.Equal(command.Description(), tt.wantDescription))
 			g.Should(be.Equal(command.Summary(), tt.wantSummary))
@@ -56,7 +54,7 @@ func TestCommandWriter(t *testing.T) {
 	g := ghost.New(t)
 
 	writer := new(bytes.Buffer)
-	command := New("foo", WithWriter(writer))
+	command := NewCommand("foo", CommandWriter(writer))
 	g.Should(be.Equal[io.Writer](command.writer, writer))
 }
 
@@ -65,11 +63,11 @@ func TestCommandExecuteHelp(t *testing.T) {
 
 	cmdName := "foo"
 	output := new(bytes.Buffer)
-	command := New(
+	command := NewCommand(
 		cmdName,
-		WithSummary("some summary"),
-		WithDescription("some description"),
-		WithWriter(output),
+		CommandSummary("some summary"),
+		CommandDescription("some description"),
+		CommandWriter(output),
 	)
 
 	err := command.Execute([]string{cmdName})
@@ -89,20 +87,20 @@ func TestCommandDefaultHelpFlag(t *testing.T) {
 	)
 
 	tests := []struct {
-		flag     clip.Flag
+		flag     Flag
 		passed   string
 		behavior int
 	}{
-		{clip.NewToggle("help"), "--help", callsAction},
-		{clip.NewToggle("help"), "-h", hasError},
-		{clip.NewToggle("help", clip.FlagShort("h")), "--help", callsAction},
-		{clip.NewToggle("help", clip.FlagShort("h")), "-h", callsAction},
-		{clip.NewToggle("help", clip.FlagShort("n")), "--help", callsAction},
-		{clip.NewToggle("help", clip.FlagShort("n")), "-h", hasError},
-		{clip.NewToggle("not-help"), "--help", callsHelp},
-		{clip.NewToggle("not-help"), "-h", callsHelp},
-		{clip.NewToggle("not-help", clip.FlagShort("h")), "--help", callsHelp},
-		{clip.NewToggle("not-help", clip.FlagShort("h")), "-h", callsAction},
+		{NewToggle("help"), "--help", callsAction},
+		{NewToggle("help"), "-h", hasError},
+		{NewToggle("help", FlagShort("h")), "--help", callsAction},
+		{NewToggle("help", FlagShort("h")), "-h", callsAction},
+		{NewToggle("help", FlagShort("n")), "--help", callsAction},
+		{NewToggle("help", FlagShort("n")), "-h", hasError},
+		{NewToggle("not-help"), "--help", callsHelp},
+		{NewToggle("not-help"), "-h", callsHelp},
+		{NewToggle("not-help", FlagShort("h")), "--help", callsHelp},
+		{NewToggle("not-help", FlagShort("h")), "-h", callsAction},
 	}
 
 	for _, tt := range tests {
@@ -113,16 +111,16 @@ func TestCommandDefaultHelpFlag(t *testing.T) {
 			cmdName := "foo"
 			output := new(bytes.Buffer)
 			flagActionCalled := false
-			command := New(
+			command := NewCommand(
 				cmdName,
-				WithActionFlag(
+				CommandActionFlag(
 					tt.flag,
 					func(*Context) error {
 						flagActionCalled = true
 						return nil
 					},
 				),
-				WithWriter(output),
+				CommandWriter(output),
 			)
 			err := command.Execute([]string{cmdName, tt.passed})
 			helpText := output.String()
@@ -151,7 +149,7 @@ func TestCommandAction(t *testing.T) {
 		return nil
 	}
 
-	command := New("foo", WithAction(action))
+	command := NewCommand("foo", CommandAction(action))
 	g.Should(be.False(wasCalled))
 
 	err := command.Execute([]string{command.Name()})
@@ -171,7 +169,7 @@ func TestCommandActionError(t *testing.T) {
 		return wantErr
 	}
 
-	command := New("foo", WithAction(action))
+	command := NewCommand("foo", CommandAction(action))
 	g.Should(be.False(wasCalled))
 
 	err := command.Execute([]string{command.Name()})
@@ -188,9 +186,9 @@ func TestCommandFlagAction(t *testing.T) {
 		return nil
 	}
 	flagValue := false
-	flg := clip.NewBool(&flagValue, "my-flag")
+	flg := NewBool(&flagValue, "my-flag")
 
-	command := New("foo", WithActionFlag(flg, action))
+	command := NewCommand("foo", CommandActionFlag(flg, action))
 	g.Should(be.False(wasCalled))
 	g.Should(be.False(flagValue))
 
@@ -215,20 +213,20 @@ func TestCommandFlagCorrectAction(t *testing.T) {
 	}
 
 	notCalledValue := false
-	notCalledFlag := clip.NewBool(&notCalledValue, "not-called")
+	notCalledFlag := NewBool(&notCalledValue, "not-called")
 	correctValue := false
-	correctFlag := clip.NewBool(&correctValue, "my-flag")
+	correctFlag := NewBool(&correctValue, "my-flag")
 	secondValue := false
-	secondFlag := clip.NewBool(&secondValue, "second-flag")
+	secondFlag := NewBool(&secondValue, "second-flag")
 
-	subCommand := New("bar", WithAction(wrongAction))
+	subCommand := NewCommand("bar", CommandAction(wrongAction))
 
-	command := New(
+	command := NewCommand(
 		"foo",
-		WithCommand(subCommand),
-		WithActionFlag(notCalledFlag, wrongAction),
-		WithActionFlag(correctFlag, action),
-		WithActionFlag(secondFlag, wrongAction),
+		CommandSubCommand(subCommand),
+		CommandActionFlag(notCalledFlag, wrongAction),
+		CommandActionFlag(correctFlag, action),
+		CommandActionFlag(secondFlag, wrongAction),
 	)
 
 	g.Should(be.False(wasCalled))
@@ -252,9 +250,9 @@ func TestCommandFlagActionError(t *testing.T) {
 	}
 
 	flagValue := false
-	f := clip.NewBool(&flagValue, "my-flag")
+	f := NewBool(&flagValue, "my-flag")
 
-	command := New("foo", WithActionFlag(f, action))
+	command := NewCommand("foo", CommandActionFlag(f, action))
 
 	g.Should(be.False(wasCalled))
 	g.Should(be.False(flagValue))
@@ -279,9 +277,9 @@ func TestCommandArgs(t *testing.T) {
 		return nil
 	}
 
-	command := New(
+	command := NewCommand(
 		cmdName,
-		WithAction(action),
+		CommandAction(action),
 	)
 
 	cliArgs := append([]string{cmdName}, args...)
@@ -305,9 +303,9 @@ func TestSubCommandArgs(t *testing.T) {
 	}
 	defer func() { g.Should(be.True(subCmdWasCalled)) }()
 
-	subCommand := New(
+	subCommand := NewCommand(
 		subCmdName,
-		WithAction(subCmdAction),
+		CommandAction(subCmdAction),
 	)
 
 	cmdWasCalled := false
@@ -317,10 +315,10 @@ func TestSubCommandArgs(t *testing.T) {
 	}
 	defer func() { g.Should(be.False(cmdWasCalled)) }()
 
-	command := New(
+	command := NewCommand(
 		cmdName,
-		WithAction(cmdAction),
-		WithCommand(subCommand),
+		CommandAction(cmdAction),
+		CommandSubCommand(subCommand),
 	)
 
 	cliArgs := append([]string{cmdName, subCmdName}, args...)
@@ -335,17 +333,17 @@ func TestSubCommandDuplicates(t *testing.T) {
 		g.Should(be.Equal(recover(), `a sub-command with name "bar" already exists`))
 	}()
 
-	New(
+	NewCommand(
 		"foo",
-		WithCommand(New("bar")),
-		WithCommand(New("bar")),
+		CommandSubCommand(NewCommand("bar")),
+		CommandSubCommand(NewCommand("bar")),
 	)
 }
 
 func TestCommandNoArgs(t *testing.T) {
 	g := ghost.New(t)
 
-	command := New("foo")
+	command := NewCommand("foo")
 	err := command.Execute([]string{})
 	g.Should(be.ErrorEqual(err, "no arguments were passed"))
 }
@@ -366,8 +364,8 @@ func TestCommandNoSubCommands(t *testing.T) {
 		return nil
 	}
 
-	child := New("foo")
-	parent := New(cmdName, WithCommand(child))
+	child := NewCommand("foo")
+	parent := NewCommand(cmdName, CommandSubCommand(child))
 
 	args := []string{parent.Name()}
 	err := parent.Execute(args)
@@ -379,8 +377,8 @@ func TestCommandNoSubCommands(t *testing.T) {
 func TestCommandNonExistentSubCommand(t *testing.T) {
 	g := ghost.New(t)
 
-	command := New("foo")
-	parent := New("bar", WithCommand(command))
+	command := NewCommand("foo")
+	parent := NewCommand("bar", CommandSubCommand(command))
 	err := parent.Execute([]string{parent.Name(), "wrong"})
 	g.Should(be.ErrorEqual(err, "undefined sub-command: wrong"))
 }
@@ -392,10 +390,10 @@ func TestRun(t *testing.T) {
 	os.Args = []string{"foo"}
 
 	buf := new(bytes.Buffer)
-	command := New(
+	command := NewCommand(
 		"foo",
-		WithAction(func(*Context) error { return nil }),
-		WithWriter(buf),
+		CommandAction(func(*Context) error { return nil }),
+		CommandWriter(buf),
 	)
 
 	g.Should(be.Zero(command.Run()))
@@ -410,10 +408,10 @@ func TestRunError(t *testing.T) {
 
 	wantErr := errors.New("oops")
 	buf := new(bytes.Buffer)
-	command := New(
+	command := NewCommand(
 		"foo",
-		WithAction(func(*Context) error { return wantErr }),
-		WithWriter(buf),
+		CommandAction(func(*Context) error { return wantErr }),
+		CommandWriter(buf),
 	)
 
 	g.Should(be.Equal(command.Run(), 1))
@@ -428,10 +426,10 @@ func TestRunExitError(t *testing.T) {
 
 	err := NewError("oops", 3)
 	buf := new(bytes.Buffer)
-	command := New(
+	command := NewCommand(
 		"foo",
-		WithAction(func(*Context) error { return err }),
-		WithWriter(buf),
+		CommandAction(func(*Context) error { return err }),
+		CommandWriter(buf),
 	)
 
 	var exitErr exitError
@@ -448,14 +446,224 @@ func TestRunUsageError(t *testing.T) {
 
 	errMessage := "oops"
 	buf := new(bytes.Buffer)
-	command := New(
+	command := NewCommand(
 		"foo",
-		WithAction(func(ctx *Context) error {
+		CommandAction(func(ctx *Context) error {
 			return newUsageError(ctx, errMessage)
 		}),
-		WithWriter(buf),
+		CommandWriter(buf),
 	)
 
 	g.Should(be.Equal(command.Run(), 1))
 	g.Should(be.StringContaining(buf.String(), errMessage))
+}
+
+func TestParse(t *testing.T) {
+	tests := []struct {
+		args         []string
+		childSFlag   string
+		parentSFlag  string
+		childFlag    bool
+		parentFlag   bool
+		childCalled  bool
+		parentCalled bool
+	}{
+		{
+			args:         []string{"foo"},
+			parentCalled: true,
+		},
+		{
+			args:         []string{"foo", "-f"},
+			parentFlag:   true,
+			parentCalled: true,
+		},
+		{
+			args:         []string{"foo", "--flag"},
+			parentFlag:   true,
+			parentCalled: true,
+		},
+		{
+			args:         []string{"foo", "--sflag", "bar"},
+			parentSFlag:  "bar",
+			parentCalled: true,
+		},
+		{
+			args:         []string{"foo", "-fs", "bar"},
+			parentFlag:   true,
+			parentSFlag:  "bar",
+			parentCalled: true,
+		},
+		{
+			args:         []string{"foo", "--sflag", "bar", "--flag"},
+			parentFlag:   true,
+			parentSFlag:  "bar",
+			parentCalled: true,
+		},
+		{
+			args:         []string{"foo", "--flag=true"},
+			parentFlag:   true,
+			parentCalled: true,
+		},
+		{
+			args:        []string{"foo", "child"},
+			childCalled: true,
+		},
+		{
+			args:        []string{"foo", "child", "--flag"},
+			childFlag:   true,
+			childCalled: true,
+		},
+		{
+			args:        []string{"foo", "--flag", "child"},
+			childCalled: true,
+			parentFlag:  true,
+		},
+		{
+			args:        []string{"foo", "--flag=true", "child"},
+			childCalled: true,
+			parentFlag:  true,
+		},
+		{
+			args:        []string{"foo", "--flag", "child", "--flag"},
+			childFlag:   true,
+			childCalled: true,
+			parentFlag:  true,
+		},
+		{
+			args:        []string{"foo", "-fs=bar", "child"},
+			childCalled: true,
+			parentFlag:  true,
+			parentSFlag: "bar",
+		},
+		{
+			args:        []string{"foo", "-f", "-s=bar", "child"},
+			childCalled: true,
+			parentFlag:  true,
+			parentSFlag: "bar",
+		},
+		{
+			args:        []string{"foo", "--sflag", "bar", "child"},
+			childCalled: true,
+			parentSFlag: "bar",
+		},
+		{
+			args:        []string{"foo", "-fs", "bar", "child", "-fs", "baz"},
+			childFlag:   true,
+			childSFlag:  "baz",
+			childCalled: true,
+			parentFlag:  true,
+			parentSFlag: "bar",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("args: %v", tt.args), func(t *testing.T) {
+			g := ghost.New(t)
+
+			childFlag := false
+			childSFlag := ""
+			childCalled := false
+			child := NewCommand(
+				"child",
+				CommandFlag(NewString(&childSFlag, "sflag", FlagShort("s"))),
+				CommandFlag(NewBool(&childFlag, "flag", FlagShort("f"))),
+				CommandAction(func(*Context) error {
+					childCalled = true
+					return nil
+				}),
+			)
+
+			parentFlag := false
+			parentSFlag := ""
+			parentCalled := false
+			cmd := NewCommand(
+				"foo",
+				CommandFlag(NewString(&parentSFlag, "sflag", FlagShort("s"))),
+				CommandFlag(NewBool(&parentFlag, "flag", FlagShort("f"))),
+				CommandSubCommand(child),
+				CommandAction(func(*Context) error {
+					parentCalled = true
+					return nil
+				}),
+			)
+
+			g.NoError(cmd.Execute(tt.args))
+
+			g.Should(be.Equal(childCalled, tt.childCalled))
+			g.Should(be.Equal(childFlag, tt.childFlag))
+			g.Should(be.Equal(childSFlag, tt.childSFlag))
+			g.Should(be.Equal(parentCalled, tt.parentCalled))
+			g.Should(be.Equal(parentFlag, tt.parentFlag))
+			g.Should(be.Equal(parentSFlag, tt.parentSFlag))
+		})
+	}
+}
+
+func TestParseError(t *testing.T) {
+	tests := []struct {
+		args []string
+		err  string
+	}{
+		{
+			args: []string{"foo", "--bad"},
+			err:  "unknown flag: bad",
+		},
+		{
+			args: []string{"foo", "-b"},
+			err:  "unknown shorthand flag: 'b' in -b",
+		},
+		{
+			args: []string{"foo", "-bad"},
+			err:  "unknown shorthand flag: 'd' in -bad",
+		},
+		{
+			args: []string{"foo", "bad"},
+			err:  "undefined sub-command: bad",
+		},
+		{
+			args: []string{"foo", "child", "--bad"},
+			err:  "unknown flag: bad",
+		},
+		{
+			args: []string{"foo", "child", "-b"},
+			err:  "unknown shorthand flag: 'b' in -b",
+		},
+		{
+			args: []string{"foo", "child", "-bad"},
+			err:  "unknown shorthand flag: 'd' in -bad",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("args: %v", tt.args), func(t *testing.T) {
+			g := ghost.New(t)
+
+			childFlag := false
+			childCalled := false
+			child := NewCommand(
+				"child",
+				CommandFlag(NewBool(&childFlag, "flag")),
+				CommandAction(func(*Context) error {
+					childCalled = true
+					return nil
+				}),
+			)
+
+			parentFlag := false
+			parentCalled := false
+			cmd := NewCommand(
+				"foo",
+				CommandFlag(NewBool(&parentFlag, "flag")),
+				CommandSubCommand(child),
+				CommandAction(func(*Context) error {
+					parentCalled = true
+					return nil
+				}),
+			)
+
+			g.Should(be.ErrorEqual(cmd.Execute(tt.args), tt.err))
+			g.Should(be.False(childCalled))
+			g.Should(be.False(parentCalled))
+		})
+	}
 }

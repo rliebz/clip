@@ -1,4 +1,4 @@
-package command
+package clip
 
 import (
 	"bytes"
@@ -6,8 +6,6 @@ import (
 
 	"github.com/rliebz/ghost"
 	"github.com/rliebz/ghost/be"
-
-	"github.com/rliebz/clip"
 )
 
 func TestHelpContextFullName(t *testing.T) {
@@ -21,9 +19,9 @@ func TestHelpContextFullName(t *testing.T) {
 		return nil
 	}
 
-	grandchild := New("grandchild", WithAction(action))
-	child := New("child", WithCommand(grandchild))
-	root := New("root", WithCommand(child))
+	grandchild := NewCommand("grandchild", CommandAction(action))
+	child := NewCommand("child", CommandSubCommand(grandchild))
+	root := NewCommand("root", CommandSubCommand(child))
 
 	args := []string{root.Name(), child.Name(), grandchild.Name()}
 	g.NoError(root.Execute(args))
@@ -35,12 +33,12 @@ func TestHelpCommands(t *testing.T) {
 	g := ghost.New(t)
 
 	buf := new(bytes.Buffer)
-	root := New(
+	root := NewCommand(
 		"root",
-		WithWriter(buf),
-		WithCommand(New("child-one", WithSummary("1"))),
-		WithCommand(New("child-two", WithSummary("2"))),
-		WithCommand(New("child-three", WithSummary("3"))),
+		CommandWriter(buf),
+		CommandSubCommand(NewCommand("child-one", CommandSummary("1"))),
+		CommandSubCommand(NewCommand("child-two", CommandSummary("2"))),
+		CommandSubCommand(NewCommand("child-three", CommandSummary("3"))),
 	)
 
 	args := []string{root.Name()}
@@ -56,11 +54,11 @@ func TestHidden(t *testing.T) {
 	g := ghost.New(t)
 
 	buf := new(bytes.Buffer)
-	root := New(
+	root := NewCommand(
 		"root",
-		WithWriter(buf),
-		WithCommand(New("visible")),
-		WithCommand(New("hidden", AsHidden)),
+		CommandWriter(buf),
+		CommandSubCommand(NewCommand("visible")),
+		CommandSubCommand(NewCommand("hidden", CommandHidden)),
 	)
 
 	args := []string{root.Name()}
@@ -75,11 +73,11 @@ func TestHiddenFlags(t *testing.T) {
 	g := ghost.New(t)
 
 	buf := new(bytes.Buffer)
-	root := New(
+	root := NewCommand(
 		"root",
-		WithWriter(buf),
-		WithFlag(clip.NewToggle("visible")),
-		WithFlag(clip.NewToggle("hidden", clip.FlagHidden)),
+		CommandWriter(buf),
+		CommandFlag(NewToggle("visible")),
+		CommandFlag(NewToggle("hidden", FlagHidden)),
 	)
 
 	args := []string{root.Name()}
