@@ -1,4 +1,4 @@
-package flag
+package clip
 
 import (
 	"encoding"
@@ -7,39 +7,79 @@ import (
 	"strings"
 
 	"github.com/spf13/pflag"
-
-	"github.com/rliebz/clip"
 )
 
+// FlagSet is the interface for a set of flags.
+type FlagSet interface {
+	// Args returns the non-flag arguments passed.
+	Args() []string
+
+	// Changed returns whether a flag was explicitly passed to change its value.
+	Changed(name string) bool
+
+	// DefineBool creates a new boolean flag.
+	DefineBool(
+		p *bool,
+		name string,
+		short string,
+		value bool,
+		usage string,
+	)
+
+	// DefineString creates a new string flag.
+	DefineString(
+		p *string,
+		name string,
+		short string,
+		value string,
+		usage string,
+	)
+
+	// DefineString creates a new text flag.
+	DefineText(
+		p encoding.TextUnmarshaler,
+		name string,
+		short string,
+		value encoding.TextMarshaler,
+		usage string,
+	)
+
+	// Has returns whether a flag exists by name.
+	Has(name string) bool
+
+	// HasShort returns whether a flag exists by short name.
+	HasShort(name string) bool
+
+	// Parse parses a set of command-line arguments.
+	Parse(args []string) error
+}
+
 // NewFlagSet returns a FlagSet.
-func NewFlagSet(name string) *FlagSet {
+func NewFlagSet(name string) FlagSet {
 	pfs := pflag.NewFlagSet(name, pflag.ContinueOnError)
 	pfs.SetOutput(io.Discard)
 
-	return &FlagSet{
+	return &flagSetImpl{
 		flagSet: pfs,
 	}
 }
 
-// FlagSet represents a set of defined flags.
-type FlagSet struct { //nolint:revive // TODO: Probably changing package structure
+type flagSetImpl struct {
 	flagSet *pflag.FlagSet
 }
 
-var _ clip.FlagSet = (*FlagSet)(nil)
-
 // Args returns non-flag arguments.
-func (fs *FlagSet) Args() []string {
+func (fs *flagSetImpl) Args() []string {
 	return fs.flagSet.Args()
 }
 
 // Changed returns whether a variable was changed.
-func (fs *FlagSet) Changed(name string) bool {
+func (fs *flagSetImpl) Changed(name string) bool {
 	return fs.flagSet.Changed(name)
 }
 
 // DefineBool defines a bool flag.
-func (fs *FlagSet) DefineBool(
+func (fs *flagSetImpl) DefineBool(
 	p *bool,
 	name string,
 	short string,
@@ -50,7 +90,7 @@ func (fs *FlagSet) DefineBool(
 }
 
 // DefineString defines a string flag.
-func (fs *FlagSet) DefineString(
+func (fs *flagSetImpl) DefineString(
 	p *string,
 	name string,
 	short string,
@@ -61,7 +101,7 @@ func (fs *FlagSet) DefineString(
 }
 
 // DefineText defines a flag based on [encoding.TextMarshaler]/[encoding.TextUnmarshaler].
-func (fs *FlagSet) DefineText(
+func (fs *flagSetImpl) DefineText(
 	p encoding.TextUnmarshaler,
 	name string,
 	short string,
@@ -72,17 +112,17 @@ func (fs *FlagSet) DefineText(
 }
 
 // Has returns whether a flagset has a flag by a name.
-func (fs *FlagSet) Has(name string) bool {
+func (fs *flagSetImpl) Has(name string) bool {
 	return fs.flagSet.Lookup(name) != nil
 }
 
 // HasShort returns whether a flagset has a flag by a short name.
-func (fs *FlagSet) HasShort(name string) bool {
+func (fs *flagSetImpl) HasShort(name string) bool {
 	return fs.flagSet.ShorthandLookup(name) != nil
 }
 
 // Parse a set of command-line arguments as flags.
-func (fs *FlagSet) Parse(args []string) error {
+func (fs *flagSetImpl) Parse(args []string) error {
 	i, err := fs.nextArgIndex(args)
 	if err != nil {
 		return err
@@ -97,7 +137,7 @@ func (fs *FlagSet) Parse(args []string) error {
 
 // nextArgIndex finds the index of the next arg in the arg list.
 // If no args are present, -1 is returned.
-func (fs *FlagSet) nextArgIndex(args []string) (int, error) {
+func (fs *flagSetImpl) nextArgIndex(args []string) (int, error) {
 	for i := 0; i < len(args); i++ {
 		arg := args[i]
 		if !isFlag(arg) || arg == "--" {
@@ -117,7 +157,7 @@ func (fs *FlagSet) nextArgIndex(args []string) (int, error) {
 	return -1, nil
 }
 
-func (fs *FlagSet) getFlagFromArg(arg string) (*pflag.Flag, error) {
+func (fs *flagSetImpl) getFlagFromArg(arg string) (*pflag.Flag, error) {
 	fname := strings.SplitN(arg, "=", 2)[0]
 
 	if strings.HasPrefix(fname, "--") {

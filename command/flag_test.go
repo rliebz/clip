@@ -7,7 +7,7 @@ import (
 	"github.com/rliebz/ghost"
 	"github.com/rliebz/ghost/be"
 
-	"github.com/rliebz/clip/flag"
+	"github.com/rliebz/clip"
 )
 
 func TestParse(t *testing.T) {
@@ -117,8 +117,8 @@ func TestParse(t *testing.T) {
 			childCalled := false
 			child := New(
 				"child",
-				WithFlag(flag.NewString(&childSFlag, "sflag", flag.WithShort("s"))),
-				WithFlag(flag.NewBool(&childFlag, "flag", flag.WithShort("f"))),
+				WithFlag(clip.NewString(&childSFlag, "sflag", clip.FlagShort("s"))),
+				WithFlag(clip.NewBool(&childFlag, "flag", clip.FlagShort("f"))),
 				WithAction(func(*Context) error {
 					childCalled = true
 					return nil
@@ -130,8 +130,8 @@ func TestParse(t *testing.T) {
 			parentCalled := false
 			cmd := New(
 				"foo",
-				WithFlag(flag.NewString(&parentSFlag, "sflag", flag.WithShort("s"))),
-				WithFlag(flag.NewBool(&parentFlag, "flag", flag.WithShort("f"))),
+				WithFlag(clip.NewString(&parentSFlag, "sflag", clip.FlagShort("s"))),
+				WithFlag(clip.NewBool(&parentFlag, "flag", clip.FlagShort("f"))),
 				WithCommand(child),
 				WithAction(func(*Context) error {
 					parentCalled = true
@@ -194,7 +194,7 @@ func TestParseError(t *testing.T) {
 			childCalled := false
 			child := New(
 				"child",
-				WithFlag(flag.NewBool(&childFlag, "flag")),
+				WithFlag(clip.NewBool(&childFlag, "flag")),
 				WithAction(func(*Context) error {
 					childCalled = true
 					return nil
@@ -205,7 +205,7 @@ func TestParseError(t *testing.T) {
 			parentCalled := false
 			cmd := New(
 				"foo",
-				WithFlag(flag.NewBool(&parentFlag, "flag")),
+				WithFlag(clip.NewBool(&parentFlag, "flag")),
 				WithCommand(child),
 				WithAction(func(*Context) error {
 					parentCalled = true

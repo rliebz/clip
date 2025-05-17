@@ -23,7 +23,7 @@ import (
 
 func main() {
 	// Create a command-line application
-	app := command.New("my-app")
+	app := clip.NewCommand("my-app")
 
 	// Run it
 	os.Exit(app.Run())
@@ -42,14 +42,14 @@ Options:
 
 Since this app doesn't do anything, the help documentation isn't very useful.
 Commands can be configured by passing a list of functional options, such as
-`command.WithSummary` for a one-line summary, or `command.WithDescription` for
+`clip.CommandSummary` for a one-line summary, or `clip.CommandDescription` for
 a slightly longer description:
 
 ```go
-app := command.New(
+app := clip.NewCommand(
 	"my-app",
-	command.WithSummary("A command-line application"),
-	command.WithDescription(`This is a simple "Hello World" demo application.`),
+	clip.CommandSummary("A command-line application"),
+	clip.CommandDescription(`This is a simple "Hello World" demo application.`),
 )
 
 os.Exit(app.Run())
@@ -67,27 +67,27 @@ Options:
   -h, --help  Print help and exit
 ```
 
-Let's add a sub-command using `command.WithCommand` and functionality using
-`command.WithAction`. Because commands are immutable once created, we must
+Let's add a sub-command using `clip.CommandCommand` and functionality using
+`clip.CommandAction`. Because commands are immutable once created, we must
 declare sub-commands before their parent commands:
 
 ```go
 // Define a sub-command "hello"
-hello := command.New(
+hello := clip.NewCommand(
 	"hello",
-	command.WithSummary("Greet the world"),
-	command.WithAction(func(ctx *command.Context) error {
+	clip.CommandSummary("Greet the world"),
+	clip.CommandAction(func(ctx *command.Context) error {
 	  fmt.Println("Hello, world!")
 	  return nil
 	}),
 )
 
 // Create the root command "my-app"
-app := command.New(
+app := clip.NewCommand(
 	"my-app",
-	command.WithSummary("A command-line application"),
-	command.WithDescription(`This is a simple "Hello World" demo application.`),
-	command.WithCommand(hello),
+	clip.CommandSummary("A command-line application"),
+	clip.CommandDescription(`This is a simple "Hello World" demo application.`),
+	clip.CommandCommand(hello),
 )
 
 // Run it
@@ -128,14 +128,14 @@ By default, any unexpected arguments passed to a command are considered an
 error.
 
 To make arguments available as a slice from an action's context, the function
-`command.WithArgs` can be used:
+`clip.CommandArgs` can be used:
 
 ```go
 var args []string
-hello := command.New(
+hello := clip.NewCommand(
 	"hello",
-	command.WithArgs(&args),
-	command.WithAction(func (ctx *command.Context) error {
+	clip.CommandArgs(&args),
+	clip.CommandAction(func (ctx *command.Context) error {
 	  fmt.Println("Args: ", args)
 	  return nil
 	}),
@@ -144,23 +144,23 @@ hello := command.New(
 
 Generally, however, it is better to explicitly define the arguments. This gives
 the benefit of documentation, validation, and tab-completion and can be done
-using `command.WithArg` and the `arg` package:
+using `clip.CommandArg` and the `arg` package:
 
 ```go
 name := "World"
-hello := command.New(
+hello := clip.NewCommand(
 	"hello",
-	command.WithSummary("Greet the world"),
-	command.WithArg(
-		arg.New(
+	clip.CommandSummary("Greet the world"),
+	clip.CommandArg(
+		clip.NewArg(
 			&name,
 			"name",
-			arg.AsOptional,
-			arg.WithSummary("The person to greet"),
-			arg.WithValues([]string{"Alice", "Bruce", "Carl"}),
+			clip.ArgAsOptional,
+			clip.ArgSummary("The person to greet"),
+			clip.ArgValues([]string{"Alice", "Bruce", "Carl"}),
 		),
 	),
-	command.WithAction(func(ctx *command.Context) error {
+	clip.CommandAction(func(ctx *command.Context) error {
 		greeting := fmt.Sprintf("Hello, %s\n", name)
 		fmt.Println(greeting)
 		return nil
@@ -199,19 +199,19 @@ Arguments and sub-commands are mutually exclusive.
 ### Flags
 
 The `-h`/`--help` flag is defined by default, but more can be created using
-`command.WithFlag`/`command.WithActionFlag` and the `flag` package.
+`clip.CommandFlag`/`clip.CommandActionFlag` and the `flag` package.
 
 To create a flag that prints the version and exits, use an action flag:
 
 ```go
 version := "v0.1.0"
-app := command.New(
+app := clip.NewCommand(
 	"app",
-	command.WithActionFlag(
-		flag.NewToggle(
+	clip.CommandActionFlag(
+		clip.NewToggleFlag(
 			"version",
-			flag.WithShort("V"),
-			flag.WithSummary("Print the version and exit"),
+			clip.FlagShort("V"),
+			clip.FlagSummary("Print the version and exit"),
 		),
 		func(ctx *command.Context) error {
 			fmt.Println(version)
@@ -226,24 +226,24 @@ Flags can be created with different types, such as bool and string:
 ```go
 loud := false
 name := "world"
-hello := command.New(
+hello := clip.NewCommand(
 	"hello",
-	command.WithSummary("Greet the world"),
-	command.WithFlag(
-		flag.NewBool(
+	clip.CommandSummary("Greet the world"),
+	clip.CommandFlag(
+		clip.NewBoolFlag(
 			&loud,
 			"loud",
-			flag.WithSummary("Whether to pump up the volume to max"),
+			clip.FlagSummary("Whether to pump up the volume to max"),
 		),
 	),
-	command.WithFlag(
-		flag.NewString(
+	clip.CommandFlag(
+		clip.NewStringString(
 			&name,
 			"name",
-			flag.WithSummary("Who to greet"),
+			clip.FlagSummary("Who to greet"),
 		),
 	),
-	command.WithAction(func(ctx *command.Context) error {
+	clip.CommandAction(func(ctx *command.Context) error {
 		greeting := fmt.Sprintf("Hello, %s!", name)
 		if loud {
 			greeting = strings.ToUpper(greeting)

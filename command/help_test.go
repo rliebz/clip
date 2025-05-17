@@ -7,7 +7,7 @@ import (
 	"github.com/rliebz/ghost"
 	"github.com/rliebz/ghost/be"
 
-	"github.com/rliebz/clip/flag"
+	"github.com/rliebz/clip"
 )
 
 func TestHelpContextFullName(t *testing.T) {
@@ -78,8 +78,8 @@ func TestHiddenFlags(t *testing.T) {
 	root := New(
 		"root",
 		WithWriter(buf),
-		WithFlag(flag.NewToggle("visible")),
-		WithFlag(flag.NewToggle("hidden", flag.AsHidden)),
+		WithFlag(clip.NewToggle("visible")),
+		WithFlag(clip.NewToggle("hidden", clip.FlagHidden)),
 	)
 
 	args := []string{root.Name()}
