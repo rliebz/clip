@@ -18,7 +18,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/rliebz/clip/command"
+	"github.com/rliebz/clip"
 )
 
 func main() {
@@ -67,7 +67,7 @@ Options:
   -h, --help  Print help and exit
 ```
 
-Let's add a sub-command using `clip.CommandCommand` and functionality using
+Let's add a sub-command using `clip.CommandSubCommand` and functionality using
 `clip.CommandAction`. Because commands are immutable once created, we must
 declare sub-commands before their parent commands:
 
@@ -87,7 +87,7 @@ app := clip.NewCommand(
 	"my-app",
 	clip.CommandSummary("A command-line application"),
 	clip.CommandDescription(`This is a simple "Hello World" demo application.`),
-	clip.CommandCommand(hello),
+	clip.CommandSubCommand(hello),
 )
 
 // Run it
@@ -237,9 +237,10 @@ hello := clip.NewCommand(
 		),
 	),
 	clip.CommandFlag(
-		clip.NewStringString(
+		clip.NewStringFlag(
 			&name,
 			"name",
+			clip.FlagShort("l"),
 			clip.FlagSummary("Who to greet"),
 		),
 	),
@@ -267,7 +268,7 @@ Usage:
   my-app hello [options]
 
 Flags:
-      --loud  Whether to pump up the volume to max
+  -l, --loud  Whether to pump up the volume to max
       --name  Who to greet
   -h, --help  Print help and exit
 

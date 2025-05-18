@@ -62,7 +62,7 @@ const helpTemplateString = `{{.FullName}}{{if .Summary}} - {{.Summary}}{{end}}{{
 Commands:{{range .VisibleCommands}}
   {{padCommand .Name}}{{if .Summary}}{{.Summary}}{{end}}{{end}}{{end}}{{if .VisibleFlags}}
 
-Flags:{{range .VisibleFlags}}
+Options:{{range .VisibleFlags}}
   {{printFlagShort .Short}}--{{padFlag .Name}}{{if .Summary}}{{.Summary}}{{end}}{{end}}{{end}}
 `
 
