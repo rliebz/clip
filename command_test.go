@@ -620,7 +620,7 @@ func TestParseEnvVars(t *testing.T) {
 				// Skip unset values, prefer earlier values
 				FlagEnv("VALUE_NOT_SET", "FLAG_NAME", "FLAG_LEVEL"),
 			)),
-			CommandFlag(NewTextFlag(
+			CommandFlag(NewTextVarFlag(
 				&level,
 				"level",
 				FlagEnv("FLAG_LEVEL"),
@@ -657,7 +657,7 @@ func TestParseEnvVars(t *testing.T) {
 				"name",
 				FlagEnv("FLAG_NAME"),
 			)),
-			CommandFlag(NewTextFlag(
+			CommandFlag(NewTextVarFlag(
 				&level,
 				"level",
 				FlagEnv("FLAG_LEVEL"),
@@ -699,7 +699,7 @@ func TestParseEnvVars(t *testing.T) {
 				"name",
 				FlagEnv("FLAG_NAME"),
 			)),
-			CommandFlag(NewTextFlag(
+			CommandFlag(NewTextVarFlag(
 				&level,
 				"level",
 				FlagEnv("FLAG_LEVEL"),

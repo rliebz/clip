@@ -40,7 +40,7 @@ type FlagSet interface {
 	)
 
 	// DefineString creates a new text flag.
-	DefineText(
+	DefineTextVar(
 		p encoding.TextUnmarshaler,
 		name string,
 		short string,
@@ -114,9 +114,9 @@ func (fs *flagSetImpl) DefineString(
 	fs.nameToEnv[name] = env
 }
 
-// DefineText defines a flag based on [encoding.TextMarshaler] and
+// DefineTextVar defines a flag based on [encoding.TextMarshaler] and
 // [encoding.TextUnmarshaler].
-func (fs *flagSetImpl) DefineText(
+func (fs *flagSetImpl) DefineTextVar(
 	p encoding.TextUnmarshaler,
 	name string,
 	short string,

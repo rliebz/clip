@@ -87,9 +87,9 @@ func NewStringFlag(value *string, name string, options ...FlagOption) Flag {
 	return &f
 }
 
-// NewTextFlag creates a new flag based on [encoding.TextMarshaler] and
+// NewTextVarFlag creates a new flag based on [encoding.TextMarshaler] and
 // [encoding.TextUnmarshaler].
-func NewTextFlag(
+func NewTextVarFlag(
 	value interface {
 		encoding.TextMarshaler
 		encoding.TextUnmarshaler
@@ -100,7 +100,7 @@ func NewTextFlag(
 	f := newFlag(name, options...)
 
 	f.attach = func(fs FlagSet) {
-		fs.DefineText(value, name, f.short, value, f.summary, f.env)
+		fs.DefineTextVar(value, name, f.short, value, f.summary, f.env)
 	}
 
 	return &f
