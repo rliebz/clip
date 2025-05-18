@@ -2,21 +2,8 @@ package clip
 
 import "encoding"
 
-// Flag is the interface for any flag.
-type Flag interface {
-	Name() string
-	Short() string
-	Summary() string
-	Hidden() bool
-
-	// Attach the flag to a given flagset.
-	//
-	// This method is invoked before flags are parsed.
-	Attach(FlagSet)
-}
-
-// flagImpl is an immutable command-line flag.
-type flagImpl struct {
+// Flag is an immutable command-line flag.
+type Flag struct {
 	name        string
 	short       string
 	summary     string
@@ -32,29 +19,24 @@ type flagImpl struct {
 }
 
 // Name returns the name of the flag.
-func (f *flagImpl) Name() string { return f.name }
+func (f *Flag) Name() string { return f.name }
 
 // Short returns a single character flag name.
-func (f *flagImpl) Short() string { return f.short }
+func (f *Flag) Short() string { return f.short }
 
 // Summary returns a one-line description of the flag.
-func (f *flagImpl) Summary() string { return f.summary }
+func (f *Flag) Summary() string { return f.summary }
 
 // Description returns a multi-line description of the flag.
-func (f *flagImpl) Description() string { return f.description }
+func (f *Flag) Description() string { return f.description }
 
 // Hidden returns whether a flag should be hidden from help and tab completion.
-func (f *flagImpl) Hidden() bool { return f.hidden }
-
-// Attach attaches a flag to a flagset.
-func (f *flagImpl) Attach(fs FlagSet) {
-	f.attach(fs)
-}
+func (f *Flag) Hidden() bool { return f.hidden }
 
 // NewToggleFlag creates a new toggle flag.
 // Toggle flags have no associated value, but can be passed like boolean flags
 // to toggle something on. This is the simplest way to create an action flag.
-func NewToggleFlag(name string, options ...FlagOption) Flag {
+func NewToggleFlag(name string, options ...FlagOption) *Flag {
 	f := newFlag(name, options...)
 
 	f.attach = func(fs FlagSet) {
@@ -62,29 +44,29 @@ func NewToggleFlag(name string, options ...FlagOption) Flag {
 		fs.DefineBool(p, name, f.short, false, f.summary, f.env)
 	}
 
-	return &f
+	return f
 }
 
 // NewBoolFlag creates a new boolean flag.
-func NewBoolFlag(value *bool, name string, options ...FlagOption) Flag {
+func NewBoolFlag(value *bool, name string, options ...FlagOption) *Flag {
 	f := newFlag(name, options...)
 
 	f.attach = func(fs FlagSet) {
 		fs.DefineBool(value, name, f.short, *value, f.summary, f.env)
 	}
 
-	return &f
+	return f
 }
 
 // NewStringFlag creates a new string flag.
-func NewStringFlag(value *string, name string, options ...FlagOption) Flag {
+func NewStringFlag(value *string, name string, options ...FlagOption) *Flag {
 	f := newFlag(name, options...)
 
 	f.attach = func(fs FlagSet) {
 		fs.DefineString(value, name, f.short, *value, f.summary, f.env)
 	}
 
-	return &f
+	return f
 }
 
 // NewTextVarFlag creates a new flag based on [encoding.TextMarshaler] and
@@ -96,14 +78,14 @@ func NewTextVarFlag(
 	},
 	name string,
 	options ...FlagOption,
-) Flag {
+) *Flag {
 	f := newFlag(name, options...)
 
 	f.attach = func(fs FlagSet) {
 		fs.DefineTextVar(value, name, f.short, value, f.summary, f.env)
 	}
 
-	return &f
+	return f
 }
 
 // FlagOption is an option for creating a Flag.
@@ -118,13 +100,13 @@ type flagConfig struct {
 	hidden      bool
 }
 
-func newFlag(name string, options ...FlagOption) flagImpl {
+func newFlag(name string, options ...FlagOption) *Flag {
 	c := flagConfig{}
 	for _, o := range options {
 		o(&c)
 	}
 
-	return flagImpl{
+	return &Flag{
 		name:        name,
 		short:       c.short,
 		summary:     c.summary,

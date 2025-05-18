@@ -53,7 +53,7 @@ func (ctx *helpContext) FullName() string {
 func (ctx *helpContext) VisibleCommands() []*Command { return ctx.command.visibleCommands }
 
 // VisibleFlags is the list of flags in order.
-func (ctx *helpContext) VisibleFlags() []Flag { return ctx.command.visibleFlags }
+func (ctx *helpContext) VisibleFlags() []*Flag { return ctx.command.visibleFlags }
 
 const helpTemplateString = `{{.FullName}}{{if .Summary}} - {{.Summary}}{{end}}{{if .Description}}
 

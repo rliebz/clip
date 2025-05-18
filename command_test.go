@@ -88,7 +88,7 @@ func TestCommandDefaultHelpFlag(t *testing.T) {
 	)
 
 	tests := []struct {
-		flag     Flag
+		flag     *Flag
 		passed   string
 		behavior int
 	}{
