@@ -31,7 +31,7 @@ type Command struct {
 	action      func(*Context) error
 	w           io.Writer // TODO: split stdout/stderr?
 
-	flagSet         FlagSet
+	flagSet         *flagSet
 	visibleCommands []*Command
 	visibleFlags    []*Flag
 	subCommandMap   map[string]*Command
@@ -47,7 +47,7 @@ func NewCommand(name string, options ...CommandOption) *Command {
 	c := commandConfig{
 		action:        printCommandHelp,
 		subCommandMap: map[string]*Command{},
-		flagSet:       NewFlagSet(name),
+		flagSet:       newFlagSet(name),
 		flagAction:    func(*Context) (bool, error) { return false, nil },
 	}
 
@@ -84,7 +84,7 @@ type commandConfig struct {
 	action      func(*Context) error
 	writer      io.Writer
 
-	flagSet         FlagSet
+	flagSet         *flagSet
 	visibleCommands []*Command
 	visibleFlags    []*Flag
 	subCommandMap   map[string]*Command

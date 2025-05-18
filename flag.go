@@ -7,7 +7,7 @@ type Flag struct {
 	summary     string
 	description string
 	hidden      bool
-	attach      func(FlagSet)
+	attach      func(*flagSet)
 
 	// TODO: Help text
 	env []string
@@ -37,7 +37,7 @@ func (f *Flag) Hidden() bool { return f.hidden }
 func NewToggleFlag(name string, options ...FlagOption) *Flag {
 	f := newFlag(name, options...)
 
-	f.attach = func(fs FlagSet) {
+	f.attach = func(fs *flagSet) {
 		p := new(bool)
 		fs.DefineBool(p, f)
 	}
@@ -49,7 +49,7 @@ func NewToggleFlag(name string, options ...FlagOption) *Flag {
 func NewBoolFlag(value *bool, name string, options ...FlagOption) *Flag {
 	f := newFlag(name, options...)
 
-	f.attach = func(fs FlagSet) {
+	f.attach = func(fs *flagSet) {
 		fs.DefineBool(value, f)
 	}
 
@@ -60,7 +60,7 @@ func NewBoolFlag(value *bool, name string, options ...FlagOption) *Flag {
 func NewStringFlag(value *string, name string, options ...FlagOption) *Flag {
 	f := newFlag(name, options...)
 
-	f.attach = func(fs FlagSet) {
+	f.attach = func(fs *flagSet) {
 		fs.DefineString(value, f)
 	}
 
@@ -72,7 +72,7 @@ func NewStringFlag(value *string, name string, options ...FlagOption) *Flag {
 func NewTextVarFlag(value TextVar, name string, options ...FlagOption) *Flag {
 	f := newFlag(name, options...)
 
-	f.attach = func(fs FlagSet) {
+	f.attach = func(fs *flagSet) {
 		fs.DefineTextVar(value, f)
 	}
 
