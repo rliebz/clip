@@ -1,7 +1,5 @@
 package clip
 
-import "encoding"
-
 // Flag is an immutable command-line flag.
 type Flag struct {
 	name        string
@@ -41,7 +39,7 @@ func NewToggleFlag(name string, options ...FlagOption) *Flag {
 
 	f.attach = func(fs FlagSet) {
 		p := new(bool)
-		fs.DefineBool(p, name, f.short, false, f.summary, f.env)
+		fs.DefineBool(p, f)
 	}
 
 	return f
@@ -52,7 +50,7 @@ func NewBoolFlag(value *bool, name string, options ...FlagOption) *Flag {
 	f := newFlag(name, options...)
 
 	f.attach = func(fs FlagSet) {
-		fs.DefineBool(value, name, f.short, *value, f.summary, f.env)
+		fs.DefineBool(value, f)
 	}
 
 	return f
@@ -63,7 +61,7 @@ func NewStringFlag(value *string, name string, options ...FlagOption) *Flag {
 	f := newFlag(name, options...)
 
 	f.attach = func(fs FlagSet) {
-		fs.DefineString(value, name, f.short, *value, f.summary, f.env)
+		fs.DefineString(value, f)
 	}
 
 	return f
@@ -71,18 +69,11 @@ func NewStringFlag(value *string, name string, options ...FlagOption) *Flag {
 
 // NewTextVarFlag creates a new flag based on [encoding.TextMarshaler] and
 // [encoding.TextUnmarshaler].
-func NewTextVarFlag(
-	value interface {
-		encoding.TextMarshaler
-		encoding.TextUnmarshaler
-	},
-	name string,
-	options ...FlagOption,
-) *Flag {
+func NewTextVarFlag(value TextVar, name string, options ...FlagOption) *Flag {
 	f := newFlag(name, options...)
 
 	f.attach = func(fs FlagSet) {
-		fs.DefineTextVar(value, name, f.short, value, f.summary, f.env)
+		fs.DefineTextVar(value, f)
 	}
 
 	return f

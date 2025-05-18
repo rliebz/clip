@@ -11,6 +11,14 @@ import (
 	"github.com/spf13/pflag"
 )
 
+// TextVar can be marshaled to and from text.
+//
+// This is the recommended interface to implement for custom types.
+type TextVar interface {
+	encoding.TextMarshaler
+	encoding.TextUnmarshaler
+}
+
 // FlagSet is the interface for a set of flags.
 type FlagSet interface {
 	// Args returns the non-flag arguments passed.
@@ -20,34 +28,13 @@ type FlagSet interface {
 	Changed(name string) bool
 
 	// DefineBool creates a new boolean flag.
-	DefineBool(
-		p *bool,
-		name string,
-		short string,
-		value bool,
-		usage string,
-		env []string,
-	)
+	DefineBool(*bool, *Flag)
 
 	// DefineString creates a new string flag.
-	DefineString(
-		p *string,
-		name string,
-		short string,
-		value string,
-		usage string,
-		env []string,
-	)
+	DefineString(*string, *Flag)
 
 	// DefineString creates a new text flag.
-	DefineTextVar(
-		p encoding.TextUnmarshaler,
-		name string,
-		short string,
-		value encoding.TextMarshaler,
-		usage string,
-		env []string,
-	)
+	DefineTextVar(TextVar, *Flag)
 
 	// Has returns whether a flag exists by name.
 	Has(name string) bool
@@ -89,43 +76,22 @@ func (fs *flagSetImpl) Changed(name string) bool {
 }
 
 // DefineBool defines a bool flag.
-func (fs *flagSetImpl) DefineBool(
-	p *bool,
-	name string,
-	short string,
-	value bool,
-	usage string,
-	env []string,
-) {
-	fs.flagSet.BoolVarP(p, name, short, value, usage)
-	fs.nameToEnv[name] = env
+func (fs *flagSetImpl) DefineBool(p *bool, f *Flag) {
+	fs.flagSet.BoolVarP(p, f.name, f.short, *p, f.summary)
+	fs.nameToEnv[f.name] = f.env
 }
 
 // DefineString defines a string flag.
-func (fs *flagSetImpl) DefineString(
-	p *string,
-	name string,
-	short string,
-	value string,
-	usage string,
-	env []string,
-) {
-	fs.flagSet.StringVarP(p, name, short, value, usage)
-	fs.nameToEnv[name] = env
+func (fs *flagSetImpl) DefineString(p *string, f *Flag) {
+	fs.flagSet.StringVarP(p, f.name, f.short, *p, f.summary)
+	fs.nameToEnv[f.name] = f.env
 }
 
 // DefineTextVar defines a flag based on [encoding.TextMarshaler] and
 // [encoding.TextUnmarshaler].
-func (fs *flagSetImpl) DefineTextVar(
-	p encoding.TextUnmarshaler,
-	name string,
-	short string,
-	value encoding.TextMarshaler,
-	usage string,
-	env []string,
-) {
-	fs.flagSet.TextVarP(p, name, short, value, usage)
-	fs.nameToEnv[name] = env
+func (fs *flagSetImpl) DefineTextVar(p TextVar, f *Flag) {
+	fs.flagSet.TextVarP(p, f.name, f.short, p, f.summary)
+	fs.nameToEnv[f.name] = f.env
 }
 
 // Has returns whether a flagset has a flag by a name.
