@@ -88,39 +88,92 @@ func TestCommandDefaultHelpFlag(t *testing.T) {
 	)
 
 	tests := []struct {
-		flag     *Flag
-		passed   string
-		behavior int
+		flagName  string
+		flagShort string
+		passed    string
+		behavior  int
 	}{
-		{NewToggleFlag("help"), "--help", callsAction},
-		{NewToggleFlag("help"), "-h", hasError},
-		{NewToggleFlag("help", FlagShort("h")), "--help", callsAction},
-		{NewToggleFlag("help", FlagShort("h")), "-h", callsAction},
-		{NewToggleFlag("help", FlagShort("n")), "--help", callsAction},
-		{NewToggleFlag("help", FlagShort("n")), "-h", hasError},
-		{NewToggleFlag("not-help"), "--help", callsHelp},
-		{NewToggleFlag("not-help"), "-h", callsHelp},
-		{NewToggleFlag("not-help", FlagShort("h")), "--help", callsHelp},
-		{NewToggleFlag("not-help", FlagShort("h")), "-h", callsAction},
+		{
+			flagName: "help",
+			passed:   "--help",
+			behavior: callsAction,
+		},
+		{
+			flagName: "help",
+			passed:   "-h",
+			behavior: hasError,
+		},
+		{
+			flagName:  "help",
+			flagShort: "h",
+			passed:    "--help",
+			behavior:  callsAction,
+		},
+		{
+			flagName:  "help",
+			flagShort: "h",
+			passed:    "-h",
+			behavior:  callsAction,
+		},
+		{
+			flagName:  "help",
+			flagShort: "n",
+			passed:    "--help",
+			behavior:  callsAction,
+		},
+		{
+			flagName:  "help",
+			flagShort: "n",
+			passed:    "-h",
+			behavior:  hasError,
+		},
+		{
+			flagName: "not-help",
+			passed:   "--help",
+			behavior: callsHelp,
+		},
+		{
+			flagName: "not-help",
+			passed:   "-h",
+			behavior: callsHelp,
+		},
+		{
+			flagName:  "not-help",
+			flagShort: "h",
+			passed:    "--help",
+			behavior:  callsHelp,
+		},
+		{
+			flagName:  "not-help",
+			flagShort: "h",
+			passed:    "-h",
+			behavior:  callsAction,
+		},
 	}
 
 	for _, tt := range tests {
-		name := fmt.Sprintf("Flag %q/%q passed %s", tt.flag.Name(), tt.flag.Short(), tt.passed)
+		name := fmt.Sprintf("%s %s pass %s", tt.flagName, tt.flagShort, tt.passed)
 		t.Run(name, func(t *testing.T) {
 			g := ghost.New(t)
 
 			cmdName := "foo"
 			output := new(bytes.Buffer)
 			flagActionCalled := false
+
+			opts := []FlagOption{
+				FlagAction(func(*Context) error {
+					flagActionCalled = true
+					return nil
+				}),
+			}
+
+			if tt.flagShort != "" {
+				opts = append(opts, FlagShort(tt.flagShort))
+			}
+
 			command := NewCommand(
 				cmdName,
-				CommandActionFlag(
-					tt.flag,
-					func(*Context) error {
-						flagActionCalled = true
-						return nil
-					},
-				),
+				ToggleFlag(tt.flagName, opts...),
 				CommandWriter(output),
 			)
 			err := command.Execute([]string{cmdName, tt.passed})
@@ -178,7 +231,7 @@ func TestCommandActionError(t *testing.T) {
 	g.Should(be.True(wasCalled))
 }
 
-func TestCommandFlagAction(t *testing.T) {
+func TestFlagAction(t *testing.T) {
 	g := ghost.New(t)
 
 	wasCalled := false
@@ -187,9 +240,15 @@ func TestCommandFlagAction(t *testing.T) {
 		return nil
 	}
 	flagValue := false
-	flg := NewBoolFlag(&flagValue, "my-flag")
 
-	command := NewCommand("foo", CommandActionFlag(flg, action))
+	command := NewCommand(
+		"foo",
+		BoolFlag(
+			&flagValue,
+			"my-flag",
+			FlagAction(action),
+		),
+	)
 	g.Should(be.False(wasCalled))
 	g.Should(be.False(flagValue))
 
@@ -199,7 +258,7 @@ func TestCommandFlagAction(t *testing.T) {
 	g.Should(be.True(flagValue))
 }
 
-func TestCommandFlagCorrectAction(t *testing.T) {
+func TestFlagAction_correct_flag(t *testing.T) {
 	g := ghost.New(t)
 
 	wasCalled := false
@@ -214,20 +273,17 @@ func TestCommandFlagCorrectAction(t *testing.T) {
 	}
 
 	notCalledValue := false
-	notCalledFlag := NewBoolFlag(&notCalledValue, "not-called")
 	correctValue := false
-	correctFlag := NewBoolFlag(&correctValue, "my-flag")
 	secondValue := false
-	secondFlag := NewBoolFlag(&secondValue, "second-flag")
 
 	subCommand := NewCommand("bar", CommandAction(wrongAction))
 
 	command := NewCommand(
 		"foo",
 		CommandSubCommand(subCommand),
-		CommandActionFlag(notCalledFlag, wrongAction),
-		CommandActionFlag(correctFlag, action),
-		CommandActionFlag(secondFlag, wrongAction),
+		BoolFlag(&notCalledValue, "not-called", FlagAction(wrongAction)),
+		BoolFlag(&correctValue, "my-flag", FlagAction(action)),
+		BoolFlag(&secondValue, "second-flag", FlagAction(wrongAction)),
 	)
 
 	g.Should(be.False(wasCalled))
@@ -239,7 +295,7 @@ func TestCommandFlagCorrectAction(t *testing.T) {
 	g.Should(be.False(wrongWasCalled))
 }
 
-func TestCommandFlagActionError(t *testing.T) {
+func TestFlagAction_error(t *testing.T) {
 	g := ghost.New(t)
 
 	wantErr := errors.New("some error")
@@ -251,9 +307,11 @@ func TestCommandFlagActionError(t *testing.T) {
 	}
 
 	flagValue := false
-	f := NewBoolFlag(&flagValue, "my-flag")
 
-	command := NewCommand("foo", CommandActionFlag(f, action))
+	command := NewCommand(
+		"foo",
+		BoolFlag(&flagValue, "my-flag", FlagAction(action)),
+	)
 
 	g.Should(be.False(wasCalled))
 	g.Should(be.False(flagValue))
@@ -566,8 +624,8 @@ func TestParse(t *testing.T) {
 			childCalled := false
 			child := NewCommand(
 				"child",
-				CommandFlag(NewStringFlag(&childSFlag, "sflag", FlagShort("s"))),
-				CommandFlag(NewBoolFlag(&childFlag, "flag", FlagShort("f"))),
+				StringFlag(&childSFlag, "sflag", FlagShort("s")),
+				BoolFlag(&childFlag, "flag", FlagShort("f")),
 				CommandAction(func(*Context) error {
 					childCalled = true
 					return nil
@@ -579,8 +637,8 @@ func TestParse(t *testing.T) {
 			parentCalled := false
 			cmd := NewCommand(
 				"foo",
-				CommandFlag(NewStringFlag(&parentSFlag, "sflag", FlagShort("s"))),
-				CommandFlag(NewBoolFlag(&parentFlag, "flag", FlagShort("f"))),
+				StringFlag(&parentSFlag, "sflag", FlagShort("s")),
+				BoolFlag(&parentFlag, "flag", FlagShort("f")),
 				CommandSubCommand(child),
 				CommandAction(func(*Context) error {
 					parentCalled = true
@@ -614,22 +672,22 @@ func TestParseEnvVars(t *testing.T) {
 
 		cmd := NewCommand(
 			"foo",
-			CommandFlag(NewStringFlag(
+			StringFlag(
 				&name,
 				"name",
 				// Skip unset values, prefer earlier values
 				FlagEnv("VALUE_NOT_SET", "FLAG_NAME", "FLAG_LEVEL"),
-			)),
-			CommandFlag(NewTextVarFlag(
+			),
+			TextVarFlag(
 				&level,
 				"level",
 				FlagEnv("FLAG_LEVEL"),
-			)),
-			CommandFlag(NewBoolFlag(
+			),
+			BoolFlag(
 				&on,
 				"on",
 				FlagEnv("FLAG_ON"),
-			)),
+			),
 		)
 
 		g.NoError(cmd.Execute([]string{"foo"}))
@@ -652,21 +710,21 @@ func TestParseEnvVars(t *testing.T) {
 
 		cmd := NewCommand(
 			"foo",
-			CommandFlag(NewStringFlag(
+			StringFlag(
 				&name,
 				"name",
 				FlagEnv("FLAG_NAME"),
-			)),
-			CommandFlag(NewTextVarFlag(
+			),
+			TextVarFlag(
 				&level,
 				"level",
 				FlagEnv("FLAG_LEVEL"),
-			)),
-			CommandFlag(NewBoolFlag(
+			),
+			BoolFlag(
 				&on,
 				"on",
 				FlagEnv("FLAG_ON"),
-			)),
+			),
 		)
 
 		g.NoError(cmd.Execute([]string{
@@ -694,21 +752,21 @@ func TestParseEnvVars(t *testing.T) {
 
 		cmd := NewCommand(
 			"foo",
-			CommandFlag(NewStringFlag(
+			StringFlag(
 				&name,
 				"name",
 				FlagEnv("FLAG_NAME"),
-			)),
-			CommandFlag(NewTextVarFlag(
+			),
+			TextVarFlag(
 				&level,
 				"level",
 				FlagEnv("FLAG_LEVEL"),
-			)),
-			CommandFlag(NewBoolFlag(
+			),
+			BoolFlag(
 				&on,
 				"on",
 				FlagEnv("FLAG_ON"),
-			)),
+			),
 		)
 
 		err := cmd.Execute([]string{"foo"})
@@ -762,7 +820,7 @@ func TestParseError(t *testing.T) {
 			childCalled := false
 			child := NewCommand(
 				"child",
-				CommandFlag(NewBoolFlag(&childFlag, "flag")),
+				BoolFlag(&childFlag, "flag"),
 				CommandAction(func(*Context) error {
 					childCalled = true
 					return nil
@@ -773,7 +831,7 @@ func TestParseError(t *testing.T) {
 			parentCalled := false
 			cmd := NewCommand(
 				"foo",
-				CommandFlag(NewBoolFlag(&parentFlag, "flag")),
+				BoolFlag(&parentFlag, "flag"),
 				CommandSubCommand(child),
 				CommandAction(func(*Context) error {
 					parentCalled = true

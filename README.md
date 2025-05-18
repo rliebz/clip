@@ -198,8 +198,7 @@ Arguments and sub-commands are mutually exclusive.
 
 ### Flags
 
-The `-h`/`--help` flag is defined by default, but more can be created using
-`clip.CommandFlag`/`clip.CommandActionFlag` and the `flag` package.
+The `-h`/`--help` flag is defined by default.
 
 To create a flag that prints the version and exits, use an action flag:
 
@@ -207,16 +206,14 @@ To create a flag that prints the version and exits, use an action flag:
 version := "v0.1.0"
 app := clip.NewCommand(
 	"app",
-	clip.CommandActionFlag(
-		clip.NewToggleFlag(
-			"version",
-			clip.FlagShort("V"),
-			clip.FlagSummary("Print the version and exit"),
-		),
-		func(ctx *clip.Context) error {
+	clip.ToggleFlag(
+		"version",
+		clip.FlagShort("V"),
+		clip.FlagSummary("Print the version and exit"),
+		clip.FlagAction(func(ctx *clip.Context) error {
 			fmt.Println(version)
 			return nil
-		},
+		})
 	),
 )
 ```
@@ -229,20 +226,16 @@ name := "world"
 hello := clip.NewCommand(
 	"hello",
 	clip.CommandSummary("Greet the world"),
-	clip.CommandFlag(
-		clip.NewBoolFlag(
-			&loud,
-			"loud",
-			clip.FlagSummary("Whether to pump up the volume to max"),
-		),
+	clip.BoolFlag(
+		&loud,
+		"loud",
+		clip.FlagSummary("Whether to pump up the volume to max"),
 	),
-	clip.CommandFlag(
-		clip.NewStringFlag(
-			&name,
-			"name",
-			clip.FlagShort("l"),
-			clip.FlagSummary("Who to greet"),
-		),
+	clip.StringFlag(
+		&name,
+		"name",
+		clip.FlagShort("l"),
+		clip.FlagSummary("Who to greet"),
 	),
 	clip.CommandAction(func(ctx *clip.Context) error {
 		greeting := fmt.Sprintf("Hello, %s!", name)

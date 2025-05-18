@@ -7,7 +7,7 @@ type Flag struct {
 	summary     string
 	description string
 	hidden      bool
-	attach      func(*flagSet)
+	action      func(*Context) error
 
 	// TODO: Help text
 	env []string
@@ -31,52 +31,45 @@ func (f *Flag) Description() string { return f.description }
 // Hidden returns whether a flag should be hidden from help and tab completion.
 func (f *Flag) Hidden() bool { return f.hidden }
 
-// NewToggleFlag creates a new toggle flag.
+// ToggleFlag creates a new toggle flag.
+//
 // Toggle flags have no associated value, but can be passed like boolean flags
 // to toggle something on. This is the simplest way to create an action flag.
-func NewToggleFlag(name string, options ...FlagOption) *Flag {
-	f := newFlag(name, options...)
-
-	f.attach = func(fs *flagSet) {
+func ToggleFlag(name string, options ...FlagOption) CommandOption {
+	return func(c *commandConfig) {
+		f := newFlag(name, options...)
 		p := new(bool)
-		fs.DefineBool(p, f)
+		c.flagSet.DefineBool(p, f)
+		c.addFlag(f)
 	}
-
-	return f
 }
 
-// NewBoolFlag creates a new boolean flag.
-func NewBoolFlag(value *bool, name string, options ...FlagOption) *Flag {
-	f := newFlag(name, options...)
-
-	f.attach = func(fs *flagSet) {
-		fs.DefineBool(value, f)
+// BoolFlag creates a new boolean flag.
+func BoolFlag(value *bool, name string, options ...FlagOption) CommandOption {
+	return func(c *commandConfig) {
+		f := newFlag(name, options...)
+		c.flagSet.DefineBool(value, f)
+		c.addFlag(f)
 	}
-
-	return f
 }
 
-// NewStringFlag creates a new string flag.
-func NewStringFlag(value *string, name string, options ...FlagOption) *Flag {
-	f := newFlag(name, options...)
-
-	f.attach = func(fs *flagSet) {
-		fs.DefineString(value, f)
+// StringFlag creates a new string flag.
+func StringFlag(value *string, name string, options ...FlagOption) CommandOption {
+	return func(c *commandConfig) {
+		f := newFlag(name, options...)
+		c.flagSet.DefineString(value, f)
+		c.addFlag(f)
 	}
-
-	return f
 }
 
-// NewTextVarFlag creates a new flag based on [encoding.TextMarshaler] and
+// TextVarFlag creates a new flag based on [encoding.TextMarshaler] and
 // [encoding.TextUnmarshaler].
-func NewTextVarFlag(value TextVar, name string, options ...FlagOption) *Flag {
-	f := newFlag(name, options...)
-
-	f.attach = func(fs *flagSet) {
-		fs.DefineTextVar(value, f)
+func TextVarFlag(value TextVar, name string, options ...FlagOption) CommandOption {
+	return func(c *commandConfig) {
+		f := newFlag(name, options...)
+		c.flagSet.DefineTextVar(value, f)
+		c.addFlag(f)
 	}
-
-	return f
 }
 
 // FlagOption is an option for creating a Flag.
@@ -89,6 +82,7 @@ type flagConfig struct {
 	env         []string
 	deprecated  bool
 	hidden      bool
+	action      func(*Context) error
 }
 
 func newFlag(name string, options ...FlagOption) *Flag {
@@ -105,6 +99,7 @@ func newFlag(name string, options ...FlagOption) *Flag {
 		env:         c.env,
 		deprecated:  c.deprecated,
 		hidden:      c.hidden,
+		action:      c.action,
 	}
 }
 
@@ -141,5 +136,15 @@ func FlagDescription(description string) FlagOption {
 func FlagEnv(env ...string) FlagOption {
 	return func(c *flagConfig) {
 		c.env = env
+	}
+}
+
+// FlagAction sets the behavior of the flag to replace the command's action
+// when set.
+//
+// The action will occur if the flag is passed, regardless of the value.
+func FlagAction(action func(*Context) error) FlagOption {
+	return func(c *flagConfig) {
+		c.action = action
 	}
 }

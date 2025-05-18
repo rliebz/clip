@@ -76,8 +76,8 @@ func TestHiddenFlags(t *testing.T) {
 	root := NewCommand(
 		"root",
 		CommandWriter(buf),
-		CommandFlag(NewToggleFlag("visible")),
-		CommandFlag(NewToggleFlag("hidden", FlagHidden)),
+		ToggleFlag("visible"),
+		ToggleFlag("hidden", FlagHidden),
 	)
 
 	args := []string{root.Name()}

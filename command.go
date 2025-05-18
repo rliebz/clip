@@ -98,13 +98,13 @@ func applyConditionalDefaults(c *commandConfig) {
 	if !c.flagSet.Has("help") {
 		options := []FlagOption{
 			FlagSummary("Print help and exit"),
+			FlagAction(printCommandHelp),
 		}
 		if !c.flagSet.HasShort("h") {
 			options = append(options, FlagShort("h"))
 		}
 
-		f := NewToggleFlag("help", options...)
-		CommandActionFlag(f, printCommandHelp)(c)
+		ToggleFlag("help", options...)(c)
 	}
 }
 
@@ -155,34 +155,22 @@ func CommandWriter(writer io.Writer) CommandOption {
 	}
 }
 
-// CommandFlag adds a flag.
-func CommandFlag(f *Flag) CommandOption {
-	return func(c *commandConfig) {
-		f.attach(c.flagSet)
-		if !f.Hidden() {
-			c.visibleFlags = append(c.visibleFlags, f)
-		}
-	}
-}
-
-// CommandActionFlag adds a flag that performs an action and nothing else.
-// Flags such as --help or --version fall under this category.
+// addFlag registers a flag on a command.
 //
-// The action will occur if the flag is passed, regardless of the value, so
-// typically flag.NewToggle will be used here.
-func CommandActionFlag(f *Flag, action func(*Context) error) CommandOption {
-	return func(c *commandConfig) {
+// It is called after registering the flag on the command's flagset.
+func (c *commandConfig) addFlag(f *Flag) {
+	if !f.Hidden() {
+		c.visibleFlags = append(c.visibleFlags, f)
+	}
+
+	if f.action != nil {
 		oldAction := c.flagAction
-		f.attach(c.flagSet)
-		if !f.Hidden() {
-			c.visibleFlags = append(c.visibleFlags, f)
-		}
 		c.flagAction = func(ctx *Context) (bool, error) {
 			if wasSet, err := oldAction(ctx); wasSet {
 				return true, err
 			}
 			if c.flagSet.Changed(f.Name()) {
-				return true, action(ctx)
+				return true, f.action(ctx)
 			}
 			return false, nil
 		}
