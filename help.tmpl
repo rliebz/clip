@@ -1,11 +1,30 @@
-{{.FullName}}{{if .Summary}} - {{.Summary}}{{end}}{{if .Description}}
-
-{{.Description}}{{end}}{{if .VisibleCommands}}
-
-Commands:{{range .VisibleCommands}}
-  {{padCommand .Name}}{{if .Summary}}{{.Summary}}{{end}}{{end}}{{end}}{{if .VisibleFlags}}
-
-Options:{{range .VisibleFlags}}
-  {{printFlagShort .Short}}--{{padFlag .Name}}{{if .Summary}}{{.Summary}}{{end}}{{end}}{{end}}
-
 {{- /* vi:set ft=gotmpl */ -}}
+
+{{ .FullName }}
+{{- if .Summary }} - {{ .Summary }}{{ end }}
+
+{{- if .Description }}
+
+{{ .Description }}
+
+{{- end }}
+
+{{- if .VisibleCommands }}
+
+Commands:
+{{- range .VisibleCommands }}
+  {{ padCommand .Name }}
+  {{- if .Summary }}{{ .Summary }}{{ end }}
+{{- end}}
+
+{{- end }}
+
+{{- if .VisibleFlags}}
+
+Options:
+{{- range .VisibleFlags }}
+  {{ printFlagShort .Short }}--{{ padFlag .Name }}
+  {{- if .Summary }}{{ .Summary }}{{ end }}
+{{- end }}
+
+{{- end }}
