@@ -1,6 +1,7 @@
 package clip
 
 import (
+	_ "embed"
 	"fmt"
 	"io"
 	"text/template"
@@ -55,16 +56,8 @@ func (ctx *helpContext) VisibleCommands() []*Command { return ctx.command.visibl
 // VisibleFlags is the list of flags in order.
 func (ctx *helpContext) VisibleFlags() []*Flag { return ctx.command.visibleFlags }
 
-const helpTemplateString = `{{.FullName}}{{if .Summary}} - {{.Summary}}{{end}}{{if .Description}}
-
-{{.Description}}{{end}}{{if .VisibleCommands}}
-
-Commands:{{range .VisibleCommands}}
-  {{padCommand .Name}}{{if .Summary}}{{.Summary}}{{end}}{{end}}{{end}}{{if .VisibleFlags}}
-
-Options:{{range .VisibleFlags}}
-  {{printFlagShort .Short}}--{{padFlag .Name}}{{if .Summary}}{{.Summary}}{{end}}{{end}}{{end}}
-`
+//go:embed help.tmpl
+var helpTemplate string
 
 var printCommandHelp = func(ctx *Context) error {
 	return writeCommandHelp(ctx.Writer(), ctx)
@@ -77,7 +70,7 @@ func writeCommandHelp(wr io.Writer, ctx *Context) error {
 		"padFlag":        getFlagPadder(hctx),
 		"printFlagShort": printFlagShort,
 	})
-	t = template.Must(t.Parse(helpTemplateString))
+	t = template.Must(t.Parse(helpTemplate))
 	return t.Execute(wr, hctx)
 }
 
