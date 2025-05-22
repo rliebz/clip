@@ -155,7 +155,7 @@ hello := clip.NewCommand(
 		clip.NewArg(
 			&name,
 			"name",
-			clip.ArgAsOptional,
+			clip.ArgOptional,
 			clip.ArgSummary("The person to greet"),
 			clip.ArgValues([]string{"Alice", "Bruce", "Carl"}),
 		),
@@ -209,7 +209,7 @@ app := clip.NewCommand(
 	clip.ToggleFlag(
 		"version",
 		clip.FlagShort("V"),
-		clip.FlagSummary("Print the version and exit"),
+		clip.FlagDescription("Print the version and exit"),
 		clip.FlagAction(func(ctx *clip.Context) error {
 			fmt.Println(version)
 			return nil
@@ -229,13 +229,13 @@ hello := clip.NewCommand(
 	clip.BoolFlag(
 		&loud,
 		"loud",
-		clip.FlagSummary("Whether to pump up the volume to max"),
+		clip.FlagDescription("Whether to pump up the volume to max"),
 	),
 	clip.StringFlag(
 		&name,
 		"name",
 		clip.FlagShort("l"),
-		clip.FlagSummary("Who to greet"),
+		clip.FlagDescription("Who to greet"),
 	),
 	clip.CommandAction(func(ctx *clip.Context) error {
 		greeting := fmt.Sprintf("Hello, %s!", name)

@@ -4,13 +4,10 @@ package clip
 type Flag struct {
 	name        string
 	short       string
-	summary     string
 	description string
 	hidden      bool
 	action      func(*Context) error
-
-	// TODO: Help text
-	env []string
+	env         []string
 
 	// TODO: This
 	deprecated bool
@@ -22,11 +19,13 @@ func (f *Flag) Name() string { return f.name }
 // Short returns a single character flag name.
 func (f *Flag) Short() string { return f.short }
 
-// Summary returns a one-line description of the flag.
-func (f *Flag) Summary() string { return f.summary }
-
-// Description returns a multi-line description of the flag.
+// Description returns a description of the flag.
 func (f *Flag) Description() string { return f.description }
+
+// Env returns the list of environment variables.
+func (f *Flag) Env() []string {
+	return f.env
+}
 
 // Hidden returns whether a flag should be hidden from help and tab completion.
 func (f *Flag) Hidden() bool { return f.hidden }
@@ -77,7 +76,6 @@ type FlagOption func(*flagConfig)
 
 type flagConfig struct {
 	short       string
-	summary     string
 	description string
 	env         []string
 	deprecated  bool
@@ -94,7 +92,6 @@ func newFlag(name string, options ...FlagOption) *Flag {
 	return &Flag{
 		name:        name,
 		short:       c.short,
-		summary:     c.summary,
 		description: c.description,
 		env:         c.env,
 		deprecated:  c.deprecated,
@@ -116,14 +113,9 @@ func FlagShort(name string) FlagOption {
 	}
 }
 
-// FlagSummary adds a one-line description to a flag.
-func FlagSummary(summary string) FlagOption {
-	return func(c *flagConfig) {
-		c.summary = summary
-	}
-}
-
-// FlagDescription adds a multi-line description to a flag.
+// FlagDescription adds a description to a flag.
+//
+// Descriptions can span multiple lines.
 func FlagDescription(description string) FlagOption {
 	return func(c *flagConfig) {
 		c.description = description

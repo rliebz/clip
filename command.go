@@ -97,7 +97,7 @@ type commandConfig struct {
 func applyConditionalDefaults(c *commandConfig) {
 	if !c.flagSet.Has("help") {
 		options := []FlagOption{
-			FlagSummary("Print help and exit"),
+			FlagDescription("Print help and exit"),
 			FlagAction(printCommandHelp),
 		}
 		if !c.flagSet.HasShort("h") {

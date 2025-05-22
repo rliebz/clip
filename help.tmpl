@@ -23,8 +23,14 @@ Commands:
 
 Options:
 {{- range .VisibleFlags }}
-  {{ printFlagShort .Short }}--{{ padFlag .Name }}
-  {{- if .Summary }}{{ .Summary }}{{ end }}
+  {{ printFlagShort .Short }}--{{ .Name }}
+{{- if .Description }}
+{{ .Description | pad 10 }}
 {{- end }}
+{{- if .Env }}
+{{- if .Description }}{{ print "\n" }}{{ end }}
+{{ pad 10 "" }}Env: {{ .Env | join ", " }}
+{{- end }}
+{{ end }}
 
 {{- end }}

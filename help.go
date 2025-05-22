@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"fmt"
 	"io"
+	"strings"
 	"text/template"
 )
 
@@ -56,6 +57,10 @@ func (ctx *helpContext) VisibleCommands() []*Command { return ctx.command.visibl
 // VisibleFlags is the list of flags in order.
 func (ctx *helpContext) VisibleFlags() []*Flag { return ctx.command.visibleFlags }
 
+// TODO: Placeholder text
+// TODO: Default values
+// TODO: Deprecated
+//
 //go:embed help.tmpl
 var helpTemplate string
 
@@ -66,8 +71,9 @@ var printCommandHelp = func(ctx *Context) error {
 func writeCommandHelp(wr io.Writer, ctx *Context) error {
 	hctx := newHelpContext(ctx)
 	t := template.New("help").Funcs(template.FuncMap{
+		"join":           stringsJoin,
+		"pad":            pad,
 		"padCommand":     getCommandPadder(hctx),
-		"padFlag":        getFlagPadder(hctx),
 		"printFlagShort": printFlagShort,
 	})
 	t = template.Must(t.Parse(helpTemplate))
@@ -88,9 +94,17 @@ func printFlagShort(short string) string {
 	return fmt.Sprintf("-%s, ", short)
 }
 
-func getFlagPadder(ctx *helpContext) func(string) string {
-	s := fmt.Sprintf("%%-%ds", ctx.maxFlagNameLen+2)
-	return func(text string) string {
-		return fmt.Sprintf(s, text)
-	}
+// stringsJoin reverse the args for [strings.Join] to work better with templates.
+func stringsJoin(sep string, s []string) string {
+	return strings.Join(s, sep)
+}
+
+// pad a string with a number of leading spaces on each new line.
+func pad(size int, text string) string {
+	padding := strings.Repeat(" ", size)
+	return padding + strings.ReplaceAll(
+		strings.TrimSpace(text),
+		"\n",
+		"\n"+padding,
+	)
 }
