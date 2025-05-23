@@ -23,7 +23,7 @@ Commands:
 
 Options:
 {{- range .VisibleFlags }}
-  {{ printFlagShort .Short }}--{{ .Name }}
+{{ .Usage }}
 {{- if .Description }}
 {{ .Description | pad 10 }}
 {{- end }}

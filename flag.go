@@ -1,34 +1,51 @@
 package clip
 
-// Flag is an immutable command-line flag.
-type Flag struct {
+// flagDef is an immutable command-line flag.
+//
+// Methods are defined for use in help text.
+type flagDef struct {
 	name        string
 	short       string
 	description string
 	hidden      bool
 	action      func(*Context) error
 	env         []string
+	placeholder string
+	isBool      bool
 
 	// TODO: This
 	deprecated bool
 }
 
-// Name returns the name of the flag.
-func (f *Flag) Name() string { return f.name }
+func (f *flagDef) Usage() string {
+	usage := "      "
+	if f.short != "" {
+		usage = "  -" + f.short + ", "
+	}
 
-// Short returns a single character flag name.
-func (f *Flag) Short() string { return f.short }
+	usage += "--" + f.name
+
+	if f.placeholder != "" {
+		sep := " "
+		if f.isBool {
+			sep = "="
+		}
+		usage += sep + f.placeholder
+	}
+
+	return usage
+}
 
 // Description returns a description of the flag.
-func (f *Flag) Description() string { return f.description }
+func (f *flagDef) Description() string { return f.description }
 
 // Env returns the list of environment variables.
-func (f *Flag) Env() []string {
+func (f *flagDef) Env() []string {
 	return f.env
 }
 
 // Hidden returns whether a flag should be hidden from help and tab completion.
-func (f *Flag) Hidden() bool { return f.hidden }
+func (f *flagDef) Hidden() bool { return f.hidden }
 
 // ToggleFlag creates a new toggle flag.
 //
@@ -37,6 +54,7 @@ func (f *Flag) Hidden() bool { return f.hidden }
 func ToggleFlag(name string, options ...FlagOption) CommandOption {
 	return func(c *commandConfig) {
 		f := newFlag(name, options...)
+		f.isBool = true
 		p := new(bool)
 		c.flagSet.DefineBool(p, f)
 		c.addFlag(f)
@@ -47,6 +65,7 @@ func ToggleFlag(name string, options ...FlagOption) CommandOption {
 func BoolFlag(value *bool, name string, options ...FlagOption) CommandOption {
 	return func(c *commandConfig) {
 		f := newFlag(name, options...)
+		f.isBool = true
 		c.flagSet.DefineBool(value, f)
 		c.addFlag(f)
 	}
@@ -56,6 +75,7 @@ func BoolFlag(value *bool, name string, options ...FlagOption) CommandOption {
 func StringFlag(value *string, name string, options ...FlagOption) CommandOption {
 	return func(c *commandConfig) {
 		f := newFlag(name, options...)
+		f.placeholder = "<string>"
 		c.flagSet.DefineString(value, f)
 		c.addFlag(f)
 	}
@@ -66,6 +86,7 @@ func StringFlag(value *string, name string, options ...FlagOption) CommandOption
 func TextVarFlag(value TextVar, name string, options ...FlagOption) CommandOption {
 	return func(c *commandConfig) {
 		f := newFlag(name, options...)
+		f.placeholder = "<value>"
 		c.flagSet.DefineTextVar(value, f)
 		c.addFlag(f)
 	}
@@ -83,13 +104,13 @@ type flagConfig struct {
 	action      func(*Context) error
 }
 
-func newFlag(name string, options ...FlagOption) *Flag {
+func newFlag(name string, options ...FlagOption) *flagDef {
 	c := flagConfig{}
 	for _, o := range options {
 		o(&c)
 	}
 
-	return &Flag{
+	return &flagDef{
 		name:        name,
 		short:       c.short,
 		description: c.description,

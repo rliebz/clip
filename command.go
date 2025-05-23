@@ -33,7 +33,7 @@ type Command struct {
 
 	flagSet         *flagSet
 	visibleCommands []*Command
-	visibleFlags    []*Flag
+	visibleFlags    []*flagDef
 	subCommandMap   map[string]*Command
 	flagAction      func(*Context) (wasSet bool, err error)
 }
@@ -86,7 +86,7 @@ type commandConfig struct {
 
 	flagSet         *flagSet
 	visibleCommands []*Command
-	visibleFlags    []*Flag
+	visibleFlags    []*flagDef
 	subCommandMap   map[string]*Command
 	flagAction      func(*Context) (wasSet bool, err error)
 }
@@ -158,7 +158,7 @@ func CommandWriter(writer io.Writer) CommandOption {
 // addFlag registers a flag on a command.
 //
 // It is called after registering the flag on the command's flagset.
-func (c *commandConfig) addFlag(f *Flag) {
+func (c *commandConfig) addFlag(f *flagDef) {
 	if !f.Hidden() {
 		c.visibleFlags = append(c.visibleFlags, f)
 	}
@@ -169,7 +169,7 @@ func (c *commandConfig) addFlag(f *Flag) {
 			if wasSet, err := oldAction(ctx); wasSet {
 				return true, err
 			}
-			if c.flagSet.Changed(f.Name()) {
+			if c.flagSet.Changed(f.name) {
 				return true, f.action(ctx)
 			}
 			return false, nil

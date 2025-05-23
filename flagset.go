@@ -46,20 +46,20 @@ func (fs *flagSet) Changed(name string) bool {
 }
 
 // DefineBool defines a bool flag.
-func (fs *flagSet) DefineBool(p *bool, f *Flag) {
+func (fs *flagSet) DefineBool(p *bool, f *flagDef) {
 	fs.flagSet.BoolVarP(p, f.name, f.short, *p, f.description)
 	fs.nameToEnv[f.name] = f.env
 }
 
 // DefineString defines a string flag.
-func (fs *flagSet) DefineString(p *string, f *Flag) {
+func (fs *flagSet) DefineString(p *string, f *flagDef) {
 	fs.flagSet.StringVarP(p, f.name, f.short, *p, f.description)
 	fs.nameToEnv[f.name] = f.env
 }
 
 // DefineTextVar defines a flag based on [encoding.TextMarshaler] and
 // [encoding.TextUnmarshaler].
-func (fs *flagSet) DefineTextVar(p TextVar, f *Flag) {
+func (fs *flagSet) DefineTextVar(p TextVar, f *flagDef) {
 	fs.flagSet.TextVarP(p, f.name, f.short, p, f.description)
 	fs.nameToEnv[f.name] = f.env
 }

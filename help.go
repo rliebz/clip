@@ -19,9 +19,7 @@ func newHelpContext(ctx *Context) *helpContext {
 
 	maxFlagNameLen := 0
 	for _, flag := range ctx.command.visibleFlags {
-		if len(flag.Name()) > maxFlagNameLen {
-			maxFlagNameLen = len(flag.Name())
-		}
+		maxFlagNameLen = max(maxFlagNameLen, len(flag.name))
 	}
 
 	return &helpContext{
@@ -55,9 +53,8 @@ func (ctx *helpContext) FullName() string {
 func (ctx *helpContext) VisibleCommands() []*Command { return ctx.command.visibleCommands }
 
 // VisibleFlags is the list of flags in order.
-func (ctx *helpContext) VisibleFlags() []*Flag { return ctx.command.visibleFlags }
+func (ctx *helpContext) VisibleFlags() []*flagDef { return ctx.command.visibleFlags }
 
-// TODO: Placeholder text
 // TODO: Default values
 // TODO: Deprecated
 //
