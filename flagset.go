@@ -4,6 +4,7 @@ import (
 	"encoding"
 	"fmt"
 	"os"
+	"slices"
 	"strings"
 )
 
@@ -73,6 +74,7 @@ func (fs *flagSet) parseFlags(args []string) error {
 			fs.args = append(fs.args, args...)
 			return nil
 		case len(arg) < 2 || arg[0] != '-':
+			fs.args = slices.Grow(fs.args, 1+len(args))
 			fs.args = append(fs.args, arg)
 			fs.args = append(fs.args, args...)
 			return nil
@@ -106,18 +108,15 @@ func (fs *flagSet) parseLong(arg string, args []string) ([]string, error) {
 	case hasEqual:
 	case f.boolVal != "":
 		value = f.boolVal
-	case f.boolVal == "":
-		if len(args) == 0 {
-			return nil, fmt.Errorf("missing value for flag: --%s", name)
-		}
-
+	case len(args) > 0:
 		value, args = args[0], args[1:]
+	default:
+		return nil, fmt.Errorf("missing argument for flag: --%s", name)
 	}
 
 	if err := f.set(value); err != nil {
 		return nil, fmt.Errorf("invalid argument for flag --%s: %w", name, err)
 	}
-	f.changed = true
 
 	return args, nil
 }
@@ -148,13 +147,12 @@ func (fs *flagSet) parseShort(arg string, args []string) ([]string, error) {
 		case len(args) > 0:
 			value, args = args[0], args[1:]
 		default:
-			return nil, fmt.Errorf("missing value for flag: '%s' in %s", short, arg)
+			return nil, fmt.Errorf("missing argument for flag: '%s' in %s", short, arg)
 		}
 
 		if err := f.set(value); err != nil {
 			return nil, fmt.Errorf("invalid argument for flag '%s' in %s: %w", short, arg, err)
 		}
-		f.changed = true
 	}
 
 	return args, nil
@@ -174,7 +172,6 @@ func (fs *flagSet) parseEnv(f *flagDef) error {
 		if err := f.set(v); err != nil {
 			return fmt.Errorf("invalid argument for env var %s: %w", env, err)
 		}
-		f.changed = true
 
 		return nil
 	}

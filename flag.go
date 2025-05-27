@@ -15,13 +15,14 @@ type flagDef struct {
 	placeholder string
 
 	boolVal string
-	set     func(string) error
+	setFunc func(string) error
 	changed bool
 
 	// TODO: This
 	deprecated bool
 }
 
+// Usage returns padded usage text for use in help docs.
 func (f *flagDef) Usage() string {
 	usage := "      "
 	if f.short != "" {
@@ -52,6 +53,15 @@ func (f *flagDef) Env() []string {
 // Hidden returns whether a flag should be hidden from help and tab completion.
 func (f *flagDef) Hidden() bool { return f.hidden }
 
+// set assigns a string value to a flag.
+func (f *flagDef) set(v string) error {
+	if err := f.setFunc(v); err != nil {
+		return err
+	}
+	f.changed = true
+	return nil
+}
+
 // ToggleFlag creates a new toggle flag.
 //
 // Toggle flags have no associated value, but can be passed like boolean flags
@@ -60,7 +70,7 @@ func ToggleFlag(name string, options ...FlagOption) CommandOption {
 	return func(c *commandConfig) {
 		f := newFlag(name, options...)
 		f.boolVal = "true"
-		f.set = func(s string) error {
+		f.setFunc = func(s string) error {
 			switch s {
 			case "true", "1":
 				return nil
@@ -78,7 +88,7 @@ func BoolFlag(value *bool, name string, options ...FlagOption) CommandOption {
 	return func(c *commandConfig) {
 		f := newFlag(name, options...)
 		f.boolVal = "true"
-		f.set = func(s string) error {
+		f.setFunc = func(s string) error {
 			switch s {
 			case "true", "1":
 				*value = true
@@ -100,7 +110,7 @@ func StringFlag(value *string, name string, options ...FlagOption) CommandOption
 	return func(c *commandConfig) {
 		f := newFlag(name, options...)
 		f.placeholder = "<string>"
-		f.set = func(s string) error {
+		f.setFunc = func(s string) error {
 			*value = s
 			return nil
 		}
@@ -115,7 +125,7 @@ func TextVarFlag(value TextVar, name string, options ...FlagOption) CommandOptio
 	return func(c *commandConfig) {
 		f := newFlag(name, options...)
 		f.placeholder = "<value>"
-		f.set = func(s string) error {
+		f.setFunc = func(s string) error {
 			return value.UnmarshalText([]byte(s))
 		}
 
