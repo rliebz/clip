@@ -55,8 +55,8 @@ func TestCommandWriter(t *testing.T) {
 	g := ghost.New(t)
 
 	writer := new(bytes.Buffer)
-	command := NewCommand("foo", CommandWriter(writer))
-	g.Should(be.Equal[io.Writer](command.writer(), writer))
+	command := NewCommand("foo", CommandStdout(writer))
+	g.Should(be.Equal[io.Writer](command.stdout, writer))
 }
 
 func TestCommandExecuteHelp(t *testing.T) {
@@ -68,7 +68,7 @@ func TestCommandExecuteHelp(t *testing.T) {
 		cmdName,
 		CommandSummary("some summary"),
 		CommandDescription("some description"),
-		CommandWriter(output),
+		CommandStdout(output),
 	)
 
 	err := command.Execute([]string{cmdName})
@@ -174,7 +174,7 @@ func TestCommandDefaultHelpFlag(t *testing.T) {
 			command := NewCommand(
 				cmdName,
 				ToggleFlag(tt.flagName, opts...),
-				CommandWriter(output),
+				CommandStdout(output),
 			)
 			err := command.Execute([]string{cmdName, tt.passed})
 			helpText := output.String()
@@ -404,7 +404,7 @@ func TestCommandNoArgs(t *testing.T) {
 
 	command := NewCommand("foo")
 	err := command.Execute([]string{})
-	g.Should(be.ErrorEqual(err, "no arguments were passed"))
+	g.Should(be.ErrorEqual(err, "no arguments were provided; this is a developer error"))
 }
 
 func TestCommandNoSubCommands(t *testing.T) {
@@ -452,7 +452,8 @@ func TestRun(t *testing.T) {
 	command := NewCommand(
 		"foo",
 		CommandAction(func(*Context) error { return nil }),
-		CommandWriter(buf),
+		CommandStdout(buf),
+		CommandStderr(buf),
 	)
 
 	g.Should(be.Zero(command.Run()))
@@ -470,7 +471,7 @@ func TestRunError(t *testing.T) {
 	command := NewCommand(
 		"foo",
 		CommandAction(func(*Context) error { return wantErr }),
-		CommandWriter(buf),
+		CommandStderr(buf),
 	)
 
 	g.Should(be.Equal(command.Run(), 1))
@@ -488,7 +489,7 @@ func TestRunExitError(t *testing.T) {
 	command := NewCommand(
 		"foo",
 		CommandAction(func(*Context) error { return err }),
-		CommandWriter(buf),
+		CommandStderr(buf),
 	)
 
 	var exitErr exitError
@@ -508,9 +509,9 @@ func TestRunUsageError(t *testing.T) {
 	command := NewCommand(
 		"foo",
 		CommandAction(func(ctx *Context) error {
-			return newUsageError(ctx, errMessage)
+			return newUsageError(ctx, errors.New(errMessage))
 		}),
-		CommandWriter(buf),
+		CommandStderr(buf),
 	)
 
 	g.Should(be.Equal(command.Run(), 1))

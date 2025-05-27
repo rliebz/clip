@@ -2,34 +2,22 @@ package clip
 
 import (
 	"cmp"
-	"errors"
 	"fmt"
 	"io"
-	"log"
 	"os"
 )
 
-var defaultWriter = os.Stdout
-
 // Command is a command or sub-command that can be run from the command-line.
 //
-// To create a new command with the default settings, use:
-//
-//	command.New("command-name")
-//
-// rather than:
-//
-//	command.Command{}
-//
-// The command type is immutable once created, so passing options to New
-// is the only way to commandConfigure a command.
+// To create a new command with the default settings, use [NewCommand].
 type Command struct {
 	name        string
 	summary     string
 	description string
 	hidden      bool
 	action      func(*Context) error
-	w           io.Writer // TODO: split stdout/stderr?
+	stdout      io.Writer
+	stderr      io.Writer
 
 	flagSet         *flagSet
 	visibleCommands []*Command
@@ -41,8 +29,6 @@ type Command struct {
 // NewCommand creates a new command given a name and command options.
 //
 // By default, commands will print their help documentation when invoked.
-// Different commandConfiguration options can be passed as a command is created, but
-// the command returned will be immutable.
 func NewCommand(name string, options ...CommandOption) *Command {
 	c := commandConfig{
 		action:        printCommandHelp,
@@ -64,7 +50,8 @@ func NewCommand(name string, options ...CommandOption) *Command {
 		description: c.description,
 		hidden:      c.hidden,
 		action:      c.action,
-		w:           c.writer,
+		stdout:      c.stdout,
+		stderr:      c.stderr,
 
 		flagSet:         c.flagSet,
 		visibleCommands: c.visibleCommands,
@@ -82,7 +69,8 @@ type commandConfig struct {
 	description string
 	hidden      bool
 	action      func(*Context) error
-	writer      io.Writer
+	stdout      io.Writer
+	stderr      io.Writer
 
 	flagSet         *flagSet
 	visibleCommands []*Command
@@ -148,10 +136,17 @@ func CommandSubCommand(subCmd *Command) CommandOption {
 	}
 }
 
-// CommandWriter sets the writer for writing output.
-func CommandWriter(writer io.Writer) CommandOption {
+// CommandStdout sets the writer for command output.
+func CommandStdout(writer io.Writer) CommandOption {
 	return func(c *commandConfig) {
-		c.writer = writer
+		c.stdout = writer
+	}
+}
+
+// CommandStderr sets the writer for command error output.
+func CommandStderr(writer io.Writer) CommandOption {
+	return func(c *commandConfig) {
+		c.stderr = writer
 	}
 }
 
@@ -195,10 +190,6 @@ func (cmd *Command) Execute(args []string) error {
 		command: cmd,
 	}
 
-	if len(args) == 0 {
-		return errors.New("no arguments were passed")
-	}
-
 	if err := ctx.run(args); err != nil {
 		return err
 	}
@@ -209,17 +200,25 @@ func (cmd *Command) Execute(args []string) error {
 // Run runs a command.
 //
 // The args passed should begin with the name of the command itself.
-// For the root command in most applications, the args will be os.Args.
+// For the root command in most applications, the args will be [os.Args] and
+// the result should be passed to [os.Exit].
 func (cmd *Command) Run() int {
 	if err := cmd.Execute(os.Args); err != nil {
-		l := log.New(cmd.writer(), "", 0)
-		printError(l, err)
-		return getExitCode(err)
+		cmd.printError(err)
+		return exitCode(err)
 	}
 
 	return 0
 }
 
-func (cmd *Command) writer() io.Writer {
-	return cmp.Or[io.Writer](cmd.w, defaultWriter)
+// printError prints an error with contextual information.
+func (cmd *Command) printError(err error) {
+	w := cmp.Or[io.Writer](cmd.stderr, os.Stderr)
+
+	fmt.Fprintf(w, "Error: %s\n", err)
+
+	if ectx, ok := err.(errorContext); ok {
+		fmt.Fprintln(w)
+		fmt.Fprint(w, ectx.ErrorContext())
+	}
 }

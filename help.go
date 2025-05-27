@@ -62,7 +62,7 @@ func (ctx *helpContext) VisibleFlags() []*flagDef { return ctx.command.visibleFl
 var helpTemplate string
 
 var printCommandHelp = func(ctx *Context) error {
-	return writeCommandHelp(ctx.Writer(), ctx)
+	return writeCommandHelp(ctx.Stdout(), ctx)
 }
 
 func writeCommandHelp(wr io.Writer, ctx *Context) error {

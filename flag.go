@@ -55,8 +55,7 @@ func ToggleFlag(name string, options ...FlagOption) CommandOption {
 	return func(c *commandConfig) {
 		f := newFlag(name, options...)
 		f.isBool = true
-		p := new(bool)
-		c.flagSet.DefineBool(p, f)
+		c.flagSet.DefineBool(new(bool), f)
 		c.addFlag(f)
 	}
 }

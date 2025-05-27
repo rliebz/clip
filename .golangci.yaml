@@ -43,6 +43,11 @@ linters:
     - usestdlibvars
     - usetesting
   settings:
+    errcheck:
+      exclude-functions:
+        - fmt.Fprint
+        - fmt.Fprintf
+        - fmt.Fprintln
     gocognit:
       min-complexity: 10
     gocritic:

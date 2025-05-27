@@ -1,6 +1,11 @@
 package clip
 
-import "io"
+import (
+	"errors"
+	"fmt"
+	"io"
+	"os"
+)
 
 // Context is a command context with runtime metadata.
 type Context struct {
@@ -23,14 +28,24 @@ func (ctx *Context) Description() string {
 	return ctx.command.Description()
 }
 
-// Writer is the writer for the command.
-func (ctx *Context) Writer() io.Writer {
+// Stdout is the writer for the command output.
+func (ctx *Context) Stdout() io.Writer {
 	for cur := ctx; cur != nil; cur = cur.parent {
-		if cur.command.w != nil {
-			return cur.command.w
+		if cur.command.stdout != nil {
+			return cur.command.stdout
 		}
 	}
-	return defaultWriter
+	return os.Stdout
+}
+
+// Stderr is the writer for the command error output.
+func (ctx *Context) Stderr() io.Writer {
+	for cur := ctx; cur != nil; cur = cur.parent {
+		if cur.command.stderr != nil {
+			return cur.command.stderr
+		}
+	}
+	return os.Stderr
 }
 
 // Parent is the context's parent context.
@@ -52,8 +67,12 @@ func (ctx *Context) args() []string {
 
 // run runs the command with a given context.
 func (ctx *Context) run(args []string) error {
+	if len(args) == 0 {
+		return errors.New("no arguments were provided; this is a developer error")
+	}
+
 	if err := ctx.command.flagSet.Parse(args[1:]); err != nil {
-		return newUsageError(ctx, err.Error())
+		return newUsageError(ctx, err)
 	}
 
 	// Flag actions
@@ -77,5 +96,5 @@ func (ctx *Context) run(args []string) error {
 		return subCtx.run(ctx.args())
 	}
 
-	return newUsageErrorf(ctx, "undefined sub-command: %s", subCmdName)
+	return newUsageError(ctx, fmt.Errorf("undefined sub-command: %s", subCmdName))
 }

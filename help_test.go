@@ -35,7 +35,7 @@ func TestHelpCommands(t *testing.T) {
 	buf := new(bytes.Buffer)
 	root := NewCommand(
 		"root",
-		CommandWriter(buf),
+		CommandStdout(buf),
 		CommandSubCommand(NewCommand("child-one", CommandSummary("1"))),
 		CommandSubCommand(NewCommand("child-two", CommandSummary("2"))),
 		CommandSubCommand(NewCommand("child-three", CommandSummary("3"))),
@@ -56,7 +56,7 @@ func TestHidden(t *testing.T) {
 	buf := new(bytes.Buffer)
 	root := NewCommand(
 		"root",
-		CommandWriter(buf),
+		CommandStdout(buf),
 		CommandSubCommand(NewCommand("visible")),
 		CommandSubCommand(NewCommand("hidden", CommandHidden)),
 	)
@@ -75,7 +75,7 @@ func TestHiddenFlags(t *testing.T) {
 	buf := new(bytes.Buffer)
 	root := NewCommand(
 		"root",
-		CommandWriter(buf),
+		CommandStdout(buf),
 		ToggleFlag("visible"),
 		ToggleFlag("hidden", FlagHidden),
 	)
