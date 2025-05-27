@@ -772,8 +772,7 @@ func TestParseEnvVars(t *testing.T) {
 
 		err := cmd.Execute([]string{"foo"})
 		g.Should(be.ErrorEqual(err,
-			`invalid argument "hrm" for "--on" flag: strconv.ParseBool: `+
-				`parsing "hrm": invalid syntax`,
+			"invalid argument for env var FLAG_ON: non-boolean value: hrm",
 		))
 	})
 }
@@ -785,7 +784,7 @@ func TestParseError(t *testing.T) {
 	}{
 		{
 			args: []string{"foo", "--bad"},
-			err:  "unknown flag: bad",
+			err:  "unknown flag: --bad",
 		},
 		{
 			args: []string{"foo", "-b"},
@@ -793,7 +792,7 @@ func TestParseError(t *testing.T) {
 		},
 		{
 			args: []string{"foo", "-bad"},
-			err:  "unknown shorthand flag: 'd' in -bad",
+			err:  "unknown shorthand flag: 'b' in -bad",
 		},
 		{
 			args: []string{"foo", "bad"},
@@ -801,7 +800,7 @@ func TestParseError(t *testing.T) {
 		},
 		{
 			args: []string{"foo", "child", "--bad"},
-			err:  "unknown flag: bad",
+			err:  "unknown flag: --bad",
 		},
 		{
 			args: []string{"foo", "child", "-b"},
@@ -809,7 +808,7 @@ func TestParseError(t *testing.T) {
 		},
 		{
 			args: []string{"foo", "child", "-bad"},
-			err:  "unknown shorthand flag: 'd' in -bad",
+			err:  "unknown shorthand flag: 'b' in -bad",
 		},
 	}
 

@@ -1,5 +1,7 @@
 package clip
 
+import "fmt"
+
 // flagDef is an immutable command-line flag.
 //
 // Methods are defined for use in help text.
@@ -11,7 +13,10 @@ type flagDef struct {
 	action      func(*Context) error
 	env         []string
 	placeholder string
-	isBool      bool
+
+	boolVal string
+	set     func(string) error
+	changed bool
 
 	// TODO: This
 	deprecated bool
@@ -27,7 +32,7 @@ func (f *flagDef) Usage() string {
 
 	if f.placeholder != "" {
 		sep := " "
-		if f.isBool {
+		if f.boolVal != "" {
 			sep = "="
 		}
 		usage += sep + f.placeholder
@@ -54,8 +59,16 @@ func (f *flagDef) Hidden() bool { return f.hidden }
 func ToggleFlag(name string, options ...FlagOption) CommandOption {
 	return func(c *commandConfig) {
 		f := newFlag(name, options...)
-		f.isBool = true
-		c.flagSet.DefineBool(new(bool), f)
+		f.boolVal = "true"
+		f.set = func(s string) error {
+			switch s {
+			case "true", "1":
+				return nil
+			default:
+				return fmt.Errorf("invalid toggle flag option: %s", s)
+			}
+		}
+
 		c.addFlag(f)
 	}
 }
@@ -64,8 +77,20 @@ func ToggleFlag(name string, options ...FlagOption) CommandOption {
 func BoolFlag(value *bool, name string, options ...FlagOption) CommandOption {
 	return func(c *commandConfig) {
 		f := newFlag(name, options...)
-		f.isBool = true
-		c.flagSet.DefineBool(value, f)
+		f.boolVal = "true"
+		f.set = func(s string) error {
+			switch s {
+			case "true", "1":
+				*value = true
+			case "false", "0":
+				*value = false
+			default:
+				return fmt.Errorf("non-boolean value: %s", s)
+			}
+
+			return nil
+		}
+
 		c.addFlag(f)
 	}
 }
@@ -75,7 +100,11 @@ func StringFlag(value *string, name string, options ...FlagOption) CommandOption
 	return func(c *commandConfig) {
 		f := newFlag(name, options...)
 		f.placeholder = "<string>"
-		c.flagSet.DefineString(value, f)
+		f.set = func(s string) error {
+			*value = s
+			return nil
+		}
+
 		c.addFlag(f)
 	}
 }
@@ -86,7 +115,10 @@ func TextVarFlag(value TextVar, name string, options ...FlagOption) CommandOptio
 	return func(c *commandConfig) {
 		f := newFlag(name, options...)
 		f.placeholder = "<value>"
-		c.flagSet.DefineTextVar(value, f)
+		f.set = func(s string) error {
+			return value.UnmarshalText([]byte(s))
+		}
+
 		c.addFlag(f)
 	}
 }

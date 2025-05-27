@@ -33,7 +33,7 @@ func NewCommand(name string, options ...CommandOption) *Command {
 	c := commandConfig{
 		action:        printCommandHelp,
 		subCommandMap: map[string]*Command{},
-		flagSet:       newFlagSet(name),
+		flagSet:       newFlagSet(),
 		flagAction:    func(*Context) (bool, error) { return false, nil },
 	}
 
@@ -74,7 +74,7 @@ type commandConfig struct {
 
 	flagSet         *flagSet
 	visibleCommands []*Command
-	visibleFlags    []*flagDef
+	visibleFlags    []*flagDef // TODO: the flag set can do this
 	subCommandMap   map[string]*Command
 	flagAction      func(*Context) (wasSet bool, err error)
 }
@@ -158,13 +158,18 @@ func (c *commandConfig) addFlag(f *flagDef) {
 		c.visibleFlags = append(c.visibleFlags, f)
 	}
 
+	c.flagSet.byName[f.name] = f
+	if f.short != "" {
+		c.flagSet.byShortName[f.short] = f
+	}
+
 	if f.action != nil {
 		oldAction := c.flagAction
 		c.flagAction = func(ctx *Context) (bool, error) {
 			if wasSet, err := oldAction(ctx); wasSet {
 				return true, err
 			}
-			if c.flagSet.Changed(f.name) {
+			if f.changed {
 				return true, f.action(ctx)
 			}
 			return false, nil
