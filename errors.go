@@ -3,23 +3,42 @@ package clip
 import (
 	"bytes"
 	"errors"
+	"fmt"
 )
-
-// NewExitError creates an error with an associated exit code.
-func NewExitError(message string, code int) error {
-	return exitError{
-		code:    code,
-		message: message,
-	}
-}
 
 // exitError is an error with an associated exit code.
 type exitError struct {
-	code    int
-	message string
+	code int
+	err  error
 }
 
-func (e exitError) Error() string { return e.message }
+// NewExitError creates an error with an associated exit code.
+func NewExitError(code int, message string) error {
+	return exitError{
+		code: code,
+		err:  errors.New(message),
+	}
+}
+
+// NewExitErrorf creates an error with an associated exit code using
+// [fmt.Errorf] semantics.
+func NewExitErrorf(code int, format string, a ...any) error {
+	return exitError{
+		code: code,
+		err:  fmt.Errorf(format, a...),
+	}
+}
+
+// WithExitCode wraps an existing error with an associated exit code.
+func WithExitCode(code int, err error) error {
+	return exitError{
+		code: code,
+		err:  err,
+	}
+}
+
+func (e exitError) Error() string { return e.err.Error() }
+func (e exitError) Unwrap() error { return e.err }
 func (e exitError) ExitCode() int { return e.code }
 
 // exitCode gets an exit code if it exists, or returns 1 for non-nil errors.
@@ -57,6 +76,7 @@ type usageError struct {
 
 func (e usageError) Error() string { return e.err.Error() }
 func (e usageError) Unwrap() error { return e.err }
+func (e usageError) ExitCode() int { return 2 }
 func (e usageError) ErrorContext() string {
 	b := new(bytes.Buffer)
 	_ = writeCommandHelp(b, e.context)

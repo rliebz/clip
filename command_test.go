@@ -484,7 +484,7 @@ func TestRunExitError(t *testing.T) {
 	defer func(args []string) { os.Args = args }(os.Args)
 	os.Args = []string{"foo"}
 
-	err := NewExitError("oops", 3)
+	err := NewExitError(3, "oops")
 	buf := new(bytes.Buffer)
 	command := NewCommand(
 		"foo",
@@ -492,7 +492,7 @@ func TestRunExitError(t *testing.T) {
 		CommandStderr(buf),
 	)
 
-	var exitErr exitError
+	var exitErr interface{ ExitCode() int }
 	g.Must(be.ErrorAs(err, &exitErr))
 	g.Should(be.Equal(command.Run(), exitErr.ExitCode()))
 	g.Should(be.StringContaining(buf.String(), err.Error()))
@@ -514,7 +514,7 @@ func TestRunUsageError(t *testing.T) {
 		CommandStderr(buf),
 	)
 
-	g.Should(be.Equal(command.Run(), 1))
+	g.Should(be.Equal(command.Run(), 2))
 	g.Should(be.StringContaining(buf.String(), errMessage))
 }
 
