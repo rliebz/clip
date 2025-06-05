@@ -98,3 +98,15 @@ func (ctx *Context) run(args []string) error {
 
 	return newUsageError(ctx, fmt.Errorf("undefined sub-command: %s", subCmdName))
 }
+
+// printError prints an error with contextual information.
+func (ctx *Context) printError(err error) {
+	w := ctx.Stderr()
+
+	fmt.Fprintf(w, "Error: %s\n", err)
+
+	if ectx, ok := err.(errorContext); ok {
+		fmt.Fprintln(w)
+		fmt.Fprint(w, ectx.ErrorContext())
+	}
+}

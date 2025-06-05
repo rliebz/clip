@@ -1,7 +1,6 @@
 package clip
 
 import (
-	"cmp"
 	"fmt"
 	"io"
 	"os"
@@ -186,6 +185,24 @@ func (cmd *Command) Summary() string { return cmd.summary }
 // Description is a multi-line description of the command.
 func (cmd *Command) Description() string { return cmd.description }
 
+// Run runs a command.
+//
+// The args passed should begin with the name of the command itself.
+// For the root command in most applications, the args will be [os.Args] and
+// the result should be passed to [os.Exit].
+func (cmd *Command) Run() int {
+	ctx := &Context{
+		command: cmd,
+	}
+
+	if err := ctx.run(os.Args); err != nil {
+		ctx.printError(err)
+		return exitCode(err)
+	}
+
+	return 0
+}
+
 // Execute runs a command using given args and returns the raw error.
 //
 // This function provides more fine-grained control than Run, and can be used
@@ -200,30 +217,4 @@ func (cmd *Command) Execute(args []string) error {
 	}
 
 	return nil
-}
-
-// Run runs a command.
-//
-// The args passed should begin with the name of the command itself.
-// For the root command in most applications, the args will be [os.Args] and
-// the result should be passed to [os.Exit].
-func (cmd *Command) Run() int {
-	if err := cmd.Execute(os.Args); err != nil {
-		cmd.printError(err)
-		return exitCode(err)
-	}
-
-	return 0
-}
-
-// printError prints an error with contextual information.
-func (cmd *Command) printError(err error) {
-	w := cmp.Or[io.Writer](cmd.stderr, os.Stderr)
-
-	fmt.Fprintf(w, "Error: %s\n", err)
-
-	if ectx, ok := err.(errorContext); ok {
-		fmt.Fprintln(w)
-		fmt.Fprint(w, ectx.ErrorContext())
-	}
 }
