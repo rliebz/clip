@@ -143,22 +143,19 @@ hello := clip.NewCommand(
 ```
 
 Generally, however, it is better to explicitly define the arguments. This gives
-the benefit of documentation, validation, and tab-completion and can be done
-using `clip.CommandArg` and the `arg` package:
+the benefit of documentation, validation, and tab-completion.
 
 ```go
 name := "World"
 hello := clip.NewCommand(
 	"hello",
 	clip.CommandSummary("Greet the world"),
-	clip.CommandArg(
-		clip.NewArg(
-			&name,
-			"name",
-			clip.ArgOptional,
-			clip.ArgSummary("The person to greet"),
-			clip.ArgValues([]string{"Alice", "Bruce", "Carl"}),
-		),
+	clip.StringArg(
+    &name,
+    "name",
+    clip.ArgOptional,
+    clip.ArgSummary("The person to greet"),
+    clip.ArgValues([]string{"Alice", "Bruce", "Carl"}),
 	),
 	clip.CommandAction(func(ctx *clip.Context) error {
 		greeting := fmt.Sprintf("Hello, %s\n", name)
