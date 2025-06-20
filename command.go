@@ -20,7 +20,6 @@ type Command struct {
 
 	flagSet         *flagSet
 	visibleCommands []*Command
-	visibleFlags    []*flagDef
 	subCommandMap   map[string]*Command
 	flagAction      func(*Context) (wasSet bool, err error)
 }
@@ -54,7 +53,6 @@ func NewCommand(name string, options ...CommandOption) *Command {
 
 		flagSet:         c.flagSet,
 		visibleCommands: c.visibleCommands,
-		visibleFlags:    c.visibleFlags,
 		subCommandMap:   c.subCommandMap,
 		flagAction:      c.flagAction,
 	}
@@ -73,7 +71,6 @@ type commandConfig struct {
 
 	flagSet         *flagSet
 	visibleCommands []*Command
-	visibleFlags    []*flagDef // TODO: the flag set can do this
 	subCommandMap   map[string]*Command
 	flagAction      func(*Context) (wasSet bool, err error)
 }
@@ -153,10 +150,6 @@ func CommandStderr(writer io.Writer) CommandOption {
 //
 // It is called after registering the flag on the command's flagset.
 func (c *commandConfig) addFlag(f *flagDef) {
-	if !f.Hidden() {
-		c.visibleFlags = append(c.visibleFlags, f)
-	}
-
 	c.flagSet.byName[f.name] = f
 	if f.short != "" {
 		c.flagSet.byShortName[f.short] = f

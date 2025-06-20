@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"fmt"
 	"io"
+	"iter"
 	"strings"
 	"text/template"
 )
@@ -17,15 +18,9 @@ func newHelpContext(ctx *Context) *helpContext {
 		}
 	}
 
-	maxFlagNameLen := 0
-	for _, flag := range ctx.command.visibleFlags {
-		maxFlagNameLen = max(maxFlagNameLen, len(flag.name))
-	}
-
 	return &helpContext{
-		Context:        ctx,
-		maxCmdNameLen:  maxCmdNameLen,
-		maxFlagNameLen: maxFlagNameLen,
+		Context:       ctx,
+		maxCmdNameLen: maxCmdNameLen,
 	}
 }
 
@@ -33,8 +28,7 @@ func newHelpContext(ctx *Context) *helpContext {
 type helpContext struct {
 	*Context
 
-	maxCmdNameLen  int
-	maxFlagNameLen int
+	maxCmdNameLen int
 }
 
 func (ctx *helpContext) FullName() string {
@@ -53,7 +47,18 @@ func (ctx *helpContext) FullName() string {
 func (ctx *helpContext) VisibleCommands() []*Command { return ctx.command.visibleCommands }
 
 // VisibleFlags is the list of flags in order.
-func (ctx *helpContext) VisibleFlags() []*flagDef { return ctx.command.visibleFlags }
+func (ctx *helpContext) VisibleFlags() iter.Seq[*flagDef] {
+	return func(yield func(*flagDef) bool) {
+		for _, flag := range ctx.command.flagSet.byName {
+			if flag.Hidden() {
+				continue
+			}
+			if !yield(flag) {
+				return
+			}
+		}
+	}
+}
 
 // TODO: Default values
 // TODO: Deprecated
