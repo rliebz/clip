@@ -87,3 +87,26 @@ func TestHiddenFlags(t *testing.T) {
 	g.Should(be.StringContaining(output, "visible"))
 	g.ShouldNot(be.StringContaining(output, "hidden"))
 }
+
+func Test_printCommandHelp_placeholder(t *testing.T) {
+	g := ghost.New(t)
+
+	buf := new(bytes.Buffer)
+	root := NewCommand(
+		"root",
+		CommandStdout(buf),
+		StringFlag(new(string), "default-string"),
+		StringFlag(new(string), "override-string", FlagPlaceholder("somevalue")),
+		BoolFlag(new(bool), "default-bool"),
+		BoolFlag(new(bool), "override-bool", FlagPlaceholder("somebool")),
+	)
+
+	args := []string{root.Name()}
+	g.NoError(root.Execute(args))
+
+	output := buf.String()
+	g.Should(be.StringContaining(output, "--default-string <string>"))
+	g.Should(be.StringContaining(output, "--override-string <somevalue>"))
+	g.Should(be.StringContaining(output, "--default-bool\n"))
+	g.Should(be.StringContaining(output, "--override-bool=<somebool>"))
+}

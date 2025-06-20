@@ -1,6 +1,9 @@
 package clip
 
-import "fmt"
+import (
+	"cmp"
+	"fmt"
+)
 
 // flagDef is an immutable command-line flag.
 //
@@ -109,7 +112,7 @@ func BoolFlag(value *bool, name string, options ...FlagOption) CommandOption {
 func StringFlag(value *string, name string, options ...FlagOption) CommandOption {
 	return func(c *commandConfig) {
 		f := newFlag(name, options...)
-		f.placeholder = "<string>"
+		f.placeholder = cmp.Or(f.placeholder, "<string>")
 		f.setFunc = func(s string) error {
 			*value = s
 			return nil
@@ -124,7 +127,7 @@ func StringFlag(value *string, name string, options ...FlagOption) CommandOption
 func TextVarFlag(value TextVar, name string, options ...FlagOption) CommandOption {
 	return func(c *commandConfig) {
 		f := newFlag(name, options...)
-		f.placeholder = "<value>"
+		f.placeholder = cmp.Or(f.placeholder, "<value>")
 		f.setFunc = func(s string) error {
 			return value.UnmarshalText([]byte(s))
 		}
@@ -141,6 +144,7 @@ type flagConfig struct {
 	description string
 	env         []string
 	deprecated  bool
+	placeholder string
 	hidden      bool
 	action      func(*Context) error
 }
@@ -157,6 +161,7 @@ func newFlag(name string, options ...FlagOption) *flagDef {
 		description: c.description,
 		env:         c.env,
 		deprecated:  c.deprecated,
+		placeholder: c.placeholder,
 		hidden:      c.hidden,
 		action:      c.action,
 	}
@@ -190,6 +195,13 @@ func FlagDescription(description string) FlagOption {
 func FlagEnv(env ...string) FlagOption {
 	return func(c *flagConfig) {
 		c.env = env
+	}
+}
+
+// FlagPlaceholder sets the name of the flag's placeholder value.
+func FlagPlaceholder(name string) FlagOption {
+	return func(c *flagConfig) {
+		c.placeholder = "<" + name + ">"
 	}
 }
 
