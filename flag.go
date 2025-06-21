@@ -12,6 +12,7 @@ type flagDef struct {
 	name        string
 	short       string
 	description string
+	deprecated  string
 	hidden      bool
 	action      func(*Context) error
 	env         []string
@@ -20,9 +21,6 @@ type flagDef struct {
 	boolVal string
 	setFunc func(string) error
 	changed bool
-
-	// TODO: This
-	deprecated bool
 }
 
 // Usage returns padded usage text for use in help docs.
@@ -47,6 +45,9 @@ func (f *flagDef) Usage() string {
 
 // Description returns a description of the flag.
 func (f *flagDef) Description() string { return f.description }
+
+// Deprecated returns the deprecation message, if deprecated.
+func (f *flagDef) Deprecated() string { return f.deprecated }
 
 // Env returns the list of environment variables.
 func (f *flagDef) Env() []string {
@@ -142,8 +143,8 @@ type FlagOption func(*flagConfig)
 type flagConfig struct {
 	short       string
 	description string
+	deprecated  string
 	env         []string
-	deprecated  bool
 	placeholder string
 	hidden      bool
 	action      func(*Context) error
@@ -186,6 +187,13 @@ func FlagShort(name string) FlagOption {
 func FlagDescription(description string) FlagOption {
 	return func(c *flagConfig) {
 		c.description = description
+	}
+}
+
+// FlagDeprecated adds a deprecation to a flag.
+func FlagDeprecated(derepcation string) FlagOption {
+	return func(c *flagConfig) {
+		c.deprecated = derepcation
 	}
 }
 

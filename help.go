@@ -61,7 +61,6 @@ func (ctx *helpContext) VisibleFlags() iter.Seq[*flagDef] {
 }
 
 // TODO: Default values
-// TODO: Deprecated
 //
 //go:embed help.tmpl
 var helpTemplate string

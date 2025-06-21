@@ -26,12 +26,15 @@ Options:
 {{ .Usage }}
 {{- if .Description }}
 {{ .Description | pad 10 }}
+{{- if or .Env .Deprecated }}{{ print "\n" }}{{ end }}
+{{- end }}
+{{- if .Deprecated }}
+{{ pad 10 "" }}Deprecated: {{ .Deprecated }}
 {{- end }}
 {{- if .Env }}
-{{- if .Description }}{{ print "\n" }}{{ end }}
 {{ pad 10 "" }}Env: {{ .Env | join ", " }}
 {{- end }}
-{{- if or .Description .Env }}{{ print "\n" }}{{ end }}
+{{- if or .Description .Env .Deprecated }}{{ print "\n" }}{{ end }}
 {{- end }}
 
 {{- end }}

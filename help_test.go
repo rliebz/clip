@@ -88,6 +88,23 @@ func TestHiddenFlags(t *testing.T) {
 	g.ShouldNot(be.StringContaining(output, "hidden"))
 }
 
+func Test_printCommandHelp_deprecated(t *testing.T) {
+	g := ghost.New(t)
+
+	buf := new(bytes.Buffer)
+	root := NewCommand(
+		"root",
+		CommandStdout(buf),
+		StringFlag(new(string), "loud", FlagDeprecated("Don't be loud.")),
+	)
+
+	args := []string{root.Name()}
+	g.NoError(root.Execute(args))
+
+	output := buf.String()
+	g.Should(be.StringContaining(output, "Deprecated: Don't be loud"))
+}
+
 func Test_printCommandHelp_placeholder(t *testing.T) {
 	g := ghost.New(t)
 
