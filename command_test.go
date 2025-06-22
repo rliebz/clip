@@ -410,27 +410,18 @@ func TestCommandNoArgs(t *testing.T) {
 func TestCommandNoSubCommands(t *testing.T) {
 	g := ghost.New(t)
 
-	cmdName := "my-command"
+	buf := new(bytes.Buffer)
+	command := NewCommand(
+		"my-command",
+		CommandSummary("a CLI application"),
+		CommandStdout(buf),
+		CommandSubCommand(NewCommand("foo")),
+	)
 
-	defer func(original func(ctx *Context) error) {
-		printCommandHelp = original
-	}(printCommandHelp)
-
-	helpPrinted := false
-	printCommandHelp = func(ctx *Context) error {
-		helpPrinted = true
-		g.Should(be.Equal(ctx.Name(), cmdName))
-		return nil
-	}
-
-	child := NewCommand("foo")
-	parent := NewCommand(cmdName, CommandSubCommand(child))
-
-	args := []string{parent.Name()}
-	err := parent.Execute(args)
+	err := command.Execute([]string{command.Name()})
 	g.NoError(err)
 
-	g.Should(be.True(helpPrinted))
+	g.Should(be.StringContaining(buf.String(), "my-command - a CLI application"))
 }
 
 func TestCommandNonExistentSubCommand(t *testing.T) {

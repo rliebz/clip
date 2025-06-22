@@ -29,7 +29,9 @@ type Command struct {
 // By default, commands will print their help documentation when invoked.
 func NewCommand(name string, options ...CommandOption) *Command {
 	c := commandConfig{
-		action:        printCommandHelp,
+		action: func(ctx *Context) error {
+			return WriteHelp(ctx.Stdout(), ctx)
+		},
 		subCommandMap: map[string]*Command{},
 		flagSet:       newFlagSet(),
 		flagAction:    func(*Context) (bool, error) { return false, nil },
@@ -82,7 +84,9 @@ func applyConditionalDefaults(c *commandConfig) {
 	if !c.flagSet.Has("help") {
 		options := []FlagOption{
 			FlagDescription("Print help and exit"),
-			FlagAction(printCommandHelp),
+			FlagAction(func(ctx *Context) error {
+				return WriteHelp(ctx.Stdout(), ctx)
+			}),
 		}
 		if !c.flagSet.HasShort("h") {
 			options = append(options, FlagShort("h"))

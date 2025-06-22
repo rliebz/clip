@@ -79,6 +79,6 @@ func (e usageError) Unwrap() error { return e.err }
 func (e usageError) ExitCode() int { return 2 }
 func (e usageError) ErrorContext() string {
 	b := new(bytes.Buffer)
-	_ = writeCommandHelp(b, e.context)
+	_ = WriteHelp(b, e.context)
 	return b.String()
 }

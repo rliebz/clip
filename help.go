@@ -67,11 +67,8 @@ func (ctx *helpContext) VisibleFlags() []*flagDef {
 //go:embed help.tmpl
 var helpTemplate string
 
-var printCommandHelp = func(ctx *Context) error {
-	return writeCommandHelp(ctx.Stdout(), ctx)
-}
-
-func writeCommandHelp(wr io.Writer, ctx *Context) error {
+// WriteHelp writes the command's help text to the given writer.
+func WriteHelp(w io.Writer, ctx *Context) error {
 	hctx := newHelpContext(ctx)
 	t := template.New("help").Funcs(template.FuncMap{
 		"join":           stringsJoin,
@@ -82,7 +79,7 @@ func writeCommandHelp(wr io.Writer, ctx *Context) error {
 		"sub":            func(a, b int) int { return a - b },
 	})
 	t = template.Must(t.Parse(helpTemplate))
-	return t.Execute(wr, hctx)
+	return t.Execute(w, hctx)
 }
 
 func getCommandPadder(ctx *helpContext) func(string) string {
