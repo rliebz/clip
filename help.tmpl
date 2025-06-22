@@ -22,7 +22,9 @@ Commands:
 {{- if .VisibleFlags}}
 
 Options:
-{{- range .VisibleFlags }}
+{{- $lastIndex := sub (len .VisibleFlags) 1 }}
+{{- range $i, $flag := .VisibleFlags }}
+{{- with $flag }}
 {{ .Usage }}
 {{- if .Description }}
 {{ .Description | pad 10 }}
@@ -34,7 +36,8 @@ Options:
 {{- if .Env }}
 {{ pad 10 "" }}Env: {{ .Env | join ", " }}
 {{- end }}
-{{- if or .Description .Env .Deprecated }}{{ print "\n" }}{{ end }}
+{{- if and (ne $i $lastIndex) (or .Description .Env .Deprecated) }}{{ print "\n" }}{{ end }}
+{{- end }}
 {{- end }}
 
 {{- end }}

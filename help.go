@@ -4,7 +4,8 @@ import (
 	_ "embed"
 	"fmt"
 	"io"
-	"iter"
+	"maps"
+	"slices"
 	"strings"
 	"text/template"
 )
@@ -47,17 +48,18 @@ func (ctx *helpContext) FullName() string {
 func (ctx *helpContext) VisibleCommands() []*Command { return ctx.command.visibleCommands }
 
 // VisibleFlags is the list of flags in order.
-func (ctx *helpContext) VisibleFlags() iter.Seq[*flagDef] {
-	return func(yield func(*flagDef) bool) {
-		for _, flag := range ctx.command.flagSet.byName {
-			if flag.Hidden() {
-				continue
-			}
-			if !yield(flag) {
-				return
-			}
+func (ctx *helpContext) VisibleFlags() []*flagDef {
+	flagNames := slices.Sorted(maps.Keys(ctx.command.flagSet.byName))
+
+	var flags []*flagDef
+	for _, name := range flagNames {
+		flag := ctx.command.flagSet.byName[name]
+		if !flag.Hidden() {
+			flags = append(flags, flag)
 		}
 	}
+
+	return flags
 }
 
 // TODO: Default values
@@ -76,6 +78,8 @@ func writeCommandHelp(wr io.Writer, ctx *Context) error {
 		"pad":            pad,
 		"padCommand":     getCommandPadder(hctx),
 		"printFlagShort": printFlagShort,
+		"add":            func(a, b int) int { return a + b },
+		"sub":            func(a, b int) int { return a - b },
 	})
 	t = template.Must(t.Parse(helpTemplate))
 	return t.Execute(wr, hctx)
