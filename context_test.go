@@ -26,7 +26,7 @@ func TestContextParent(t *testing.T) {
 
 	parent := NewCommand(
 		"parent",
-		CommandSubCommand(child),
+		SubCommand(child),
 	)
 
 	args := []string{parent.Name(), child.Name()}
@@ -63,8 +63,8 @@ func TestContextRoot(t *testing.T) {
 	}
 
 	foo := NewCommand("foo", CommandAction(action))
-	bar := NewCommand("bar", CommandSubCommand(foo))
-	baz := NewCommand("baz", CommandSubCommand(bar))
+	bar := NewCommand("bar", SubCommand(foo))
+	baz := NewCommand("baz", SubCommand(bar))
 
 	tests := []struct {
 		args []string

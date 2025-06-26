@@ -122,8 +122,8 @@ func CommandAction(action func(*Context) error) CommandOption {
 	}
 }
 
-// CommandSubCommand adds a sub-command.
-func CommandSubCommand(subCmd *Command) CommandOption {
+// SubCommand adds a sub-command.
+func SubCommand(subCmd *Command) CommandOption {
 	return func(c *commandConfig) {
 		if _, exists := c.subCommandMap[subCmd.Name()]; exists {
 			panic(fmt.Sprintf("a sub-command with name %q already exists", subCmd.Name()))

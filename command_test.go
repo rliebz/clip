@@ -280,7 +280,7 @@ func TestFlagAction_correct_flag(t *testing.T) {
 
 	command := NewCommand(
 		"foo",
-		CommandSubCommand(subCommand),
+		SubCommand(subCommand),
 		BoolFlag(&notCalledValue, "not-called", FlagAction(wrongAction)),
 		BoolFlag(&correctValue, "my-flag", FlagAction(action)),
 		BoolFlag(&secondValue, "second-flag", FlagAction(wrongAction)),
@@ -377,7 +377,7 @@ func TestSubCommandArgs(t *testing.T) {
 	command := NewCommand(
 		cmdName,
 		CommandAction(cmdAction),
-		CommandSubCommand(subCommand),
+		SubCommand(subCommand),
 	)
 
 	cliArgs := append([]string{cmdName, subCmdName}, args...)
@@ -394,8 +394,8 @@ func TestSubCommandDuplicates(t *testing.T) {
 
 	NewCommand(
 		"foo",
-		CommandSubCommand(NewCommand("bar")),
-		CommandSubCommand(NewCommand("bar")),
+		SubCommand(NewCommand("bar")),
+		SubCommand(NewCommand("bar")),
 	)
 }
 
@@ -415,7 +415,7 @@ func TestCommandNoSubCommands(t *testing.T) {
 		"my-command",
 		CommandSummary("a CLI application"),
 		CommandStdout(buf),
-		CommandSubCommand(NewCommand("foo")),
+		SubCommand(NewCommand("foo")),
 	)
 
 	err := command.Execute([]string{command.Name()})
@@ -428,7 +428,7 @@ func TestCommandNonExistentSubCommand(t *testing.T) {
 	g := ghost.New(t)
 
 	command := NewCommand("foo")
-	parent := NewCommand("bar", CommandSubCommand(command))
+	parent := NewCommand("bar", SubCommand(command))
 	err := parent.Execute([]string{parent.Name(), "wrong"})
 	g.Should(be.ErrorEqual(err, "undefined sub-command: wrong"))
 }
@@ -631,7 +631,7 @@ func TestParse(t *testing.T) {
 				"foo",
 				StringFlag(&parentSFlag, "sflag", FlagShort("s")),
 				BoolFlag(&parentFlag, "flag", FlagShort("f")),
-				CommandSubCommand(child),
+				SubCommand(child),
 				CommandAction(func(*Context) error {
 					parentCalled = true
 					return nil
@@ -823,7 +823,7 @@ func TestParseError(t *testing.T) {
 			cmd := NewCommand(
 				"foo",
 				BoolFlag(&parentFlag, "flag"),
-				CommandSubCommand(child),
+				SubCommand(child),
 				CommandAction(func(*Context) error {
 					parentCalled = true
 					return nil
