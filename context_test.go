@@ -19,17 +19,15 @@ func TestContextParent(t *testing.T) {
 		return nil
 	}
 
-	child := NewCommand(
-		"foo",
-		CommandAction(action),
-	)
-
 	parent := NewCommand(
 		"parent",
-		SubCommand(child),
+		SubCommand(
+			"child",
+			CommandAction(action),
+		),
 	)
 
-	args := []string{parent.Name(), child.Name()}
+	args := []string{"parent", "child"}
 	g.NoError(parent.Execute(args))
 	g.Should(be.True(wasCalled))
 	g.Should(be.Equal(pctx.Name(), parent.Name()))
@@ -56,31 +54,64 @@ func TestContextParentNil(t *testing.T) {
 }
 
 func TestContextRoot(t *testing.T) {
-	var tctx *Context
-	action := func(ctx *Context) error {
-		tctx = ctx
-		return nil
-	}
-
-	foo := NewCommand("foo", CommandAction(action))
-	bar := NewCommand("bar", SubCommand(foo))
-	baz := NewCommand("baz", SubCommand(bar))
-
 	tests := []struct {
-		args []string
-		cmd  *Command
+		args      []string
+		fooCalled bool
+		barCalled bool
+		bazCalled bool
 	}{
-		{[]string{"foo"}, foo},
-		{[]string{"bar", "foo"}, bar},
-		{[]string{"baz", "bar", "foo"}, baz},
+		{
+			args:      []string{"foo"},
+			fooCalled: true,
+		},
+		{
+			args:      []string{"foo", "bar"},
+			barCalled: true,
+		},
+		{
+			args:      []string{"foo", "bar", "baz"},
+			bazCalled: true,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("chain of %d command(s)", len(tt.args)), func(t *testing.T) {
 			g := ghost.New(t)
 
-			g.NoError(tt.cmd.Execute(tt.args))
-			g.Should(be.Equal(tctx.Root().Name(), tt.cmd.Name()))
+			fooCalled := false
+			barCalled := false
+			bazCalled := false
+
+			cmd := NewCommand(
+				"foo",
+				CommandAction(func(ctx *Context) error {
+					fooCalled = true
+					g.Should(be.Equal(ctx.Root().Name(), "foo"))
+					return nil
+				}),
+				SubCommand(
+					"bar",
+					CommandAction(func(ctx *Context) error {
+						barCalled = true
+						g.Should(be.Equal(ctx.Root().Name(), "foo"))
+						return nil
+					}),
+					SubCommand(
+						"baz",
+						CommandAction(func(ctx *Context) error {
+							bazCalled = true
+							g.Should(be.Equal(ctx.Root().Name(), "foo"))
+							return nil
+						}),
+					),
+				),
+			)
+
+			g.NoError(cmd.Execute(tt.args))
+
+			g.Should(be.Equal(fooCalled, tt.fooCalled))
+			g.Should(be.Equal(barCalled, tt.barCalled))
+			g.Should(be.Equal(bazCalled, tt.bazCalled))
 		})
 	}
 }

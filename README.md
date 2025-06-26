@@ -68,26 +68,21 @@ Options:
 ```
 
 Let's add a sub-command using `clip.SubCommand` and functionality using
-`clip.CommandAction`. Because commands are immutable once created, we must
-declare sub-commands before their parent commands:
+`clip.CommandAction`:
 
 ```go
-// Define a sub-command "hello"
-hello := clip.NewCommand(
-  "hello",
-  clip.CommandSummary("Greet the world"),
-  clip.CommandAction(func(ctx *clip.Context) error {
-    fmt.Println("Hello, world!")
-    return nil
-  }),
-)
-
-// Create the root command "my-app"
 app := clip.NewCommand(
   "my-app",
   clip.CommandSummary("A command-line application"),
   clip.CommandDescription(`This is a simple "Hello World" demo application.`),
-  clip.SubCommand(hello),
+  clip.SubCommand(
+    "hello",
+    clip.CommandSummary("Greet the world"),
+    clip.CommandAction(func(ctx *clip.Context) error {
+      fmt.Println("Hello, world!")
+      return nil
+    }),
+  ),
 )
 
 // Run it

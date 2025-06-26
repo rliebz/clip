@@ -19,12 +19,18 @@ func TestHelpContextFullName(t *testing.T) {
 		return nil
 	}
 
-	grandchild := NewCommand("grandchild", CommandAction(action))
-	child := NewCommand("child", SubCommand(grandchild))
-	root := NewCommand("root", SubCommand(child))
+	root := NewCommand(
+		"root",
+		SubCommand(
+			"child",
+			SubCommand(
+				"grandchild",
+				CommandAction(action),
+			),
+		),
+	)
 
-	args := []string{root.Name(), child.Name(), grandchild.Name()}
-	g.NoError(root.Execute(args))
+	g.NoError(root.Execute([]string{"root", "child", "grandchild"}))
 	g.Should(be.True(wasCalled))
 	g.Should(be.Equal(hctx.FullName(), "root child grandchild"))
 }
@@ -36,9 +42,9 @@ func TestHelpCommands(t *testing.T) {
 	root := NewCommand(
 		"root",
 		CommandStdout(buf),
-		SubCommand(NewCommand("child-one", CommandSummary("1"))),
-		SubCommand(NewCommand("child-two", CommandSummary("2"))),
-		SubCommand(NewCommand("child-three", CommandSummary("3"))),
+		SubCommand("child-one", CommandSummary("1")),
+		SubCommand("child-two", CommandSummary("2")),
+		SubCommand("child-three", CommandSummary("3")),
 	)
 
 	args := []string{root.Name()}
@@ -57,8 +63,8 @@ func TestHidden(t *testing.T) {
 	root := NewCommand(
 		"root",
 		CommandStdout(buf),
-		SubCommand(NewCommand("visible")),
-		SubCommand(NewCommand("hidden", CommandHidden)),
+		SubCommand("visible"),
+		SubCommand("hidden", CommandHidden),
 	)
 
 	args := []string{root.Name()}

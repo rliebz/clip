@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-// flagDef is an immutable command-line flag.
+// flagDef is a command-line flag.
 //
 // Methods are defined for use in help text.
 type flagDef struct {

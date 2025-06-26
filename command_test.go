@@ -276,11 +276,9 @@ func TestFlagAction_correct_flag(t *testing.T) {
 	correctValue := false
 	secondValue := false
 
-	subCommand := NewCommand("bar", CommandAction(wrongAction))
-
 	command := NewCommand(
 		"foo",
-		SubCommand(subCommand),
+		SubCommand("bar", CommandAction(wrongAction)),
 		BoolFlag(&notCalledValue, "not-called", FlagAction(wrongAction)),
 		BoolFlag(&correctValue, "my-flag", FlagAction(action)),
 		BoolFlag(&secondValue, "second-flag", FlagAction(wrongAction)),
@@ -362,11 +360,6 @@ func TestSubCommandArgs(t *testing.T) {
 	}
 	defer func() { g.Should(be.True(subCmdWasCalled)) }()
 
-	subCommand := NewCommand(
-		subCmdName,
-		CommandAction(subCmdAction),
-	)
-
 	cmdWasCalled := false
 	cmdAction := func(*Context) error {
 		cmdWasCalled = true
@@ -377,7 +370,10 @@ func TestSubCommandArgs(t *testing.T) {
 	command := NewCommand(
 		cmdName,
 		CommandAction(cmdAction),
-		SubCommand(subCommand),
+		SubCommand(
+			subCmdName,
+			CommandAction(subCmdAction),
+		),
 	)
 
 	cliArgs := append([]string{cmdName, subCmdName}, args...)
@@ -394,8 +390,8 @@ func TestSubCommandDuplicates(t *testing.T) {
 
 	NewCommand(
 		"foo",
-		SubCommand(NewCommand("bar")),
-		SubCommand(NewCommand("bar")),
+		SubCommand("bar"),
+		SubCommand("bar"),
 	)
 }
 
@@ -415,7 +411,7 @@ func TestCommandNoSubCommands(t *testing.T) {
 		"my-command",
 		CommandSummary("a CLI application"),
 		CommandStdout(buf),
-		SubCommand(NewCommand("foo")),
+		SubCommand("foo"),
 	)
 
 	err := command.Execute([]string{command.Name()})
@@ -427,8 +423,7 @@ func TestCommandNoSubCommands(t *testing.T) {
 func TestCommandNonExistentSubCommand(t *testing.T) {
 	g := ghost.New(t)
 
-	command := NewCommand("foo")
-	parent := NewCommand("bar", SubCommand(command))
+	parent := NewCommand("bar", SubCommand("foo"))
 	err := parent.Execute([]string{parent.Name(), "wrong"})
 	g.Should(be.ErrorEqual(err, "undefined sub-command: wrong"))
 }
@@ -614,15 +609,6 @@ func TestParse(t *testing.T) {
 			childFlag := false
 			childSFlag := ""
 			childCalled := false
-			child := NewCommand(
-				"child",
-				StringFlag(&childSFlag, "sflag", FlagShort("s")),
-				BoolFlag(&childFlag, "flag", FlagShort("f")),
-				CommandAction(func(*Context) error {
-					childCalled = true
-					return nil
-				}),
-			)
 
 			parentFlag := false
 			parentSFlag := ""
@@ -631,7 +617,15 @@ func TestParse(t *testing.T) {
 				"foo",
 				StringFlag(&parentSFlag, "sflag", FlagShort("s")),
 				BoolFlag(&parentFlag, "flag", FlagShort("f")),
-				SubCommand(child),
+				SubCommand(
+					"child",
+					StringFlag(&childSFlag, "sflag", FlagShort("s")),
+					BoolFlag(&childFlag, "flag", FlagShort("f")),
+					CommandAction(func(*Context) error {
+						childCalled = true
+						return nil
+					}),
+				),
 				CommandAction(func(*Context) error {
 					parentCalled = true
 					return nil
@@ -809,21 +803,20 @@ func TestParseError(t *testing.T) {
 
 			childFlag := false
 			childCalled := false
-			child := NewCommand(
-				"child",
-				BoolFlag(&childFlag, "flag"),
-				CommandAction(func(*Context) error {
-					childCalled = true
-					return nil
-				}),
-			)
 
 			parentFlag := false
 			parentCalled := false
 			cmd := NewCommand(
 				"foo",
 				BoolFlag(&parentFlag, "flag"),
-				SubCommand(child),
+				SubCommand(
+					"child",
+					BoolFlag(&childFlag, "flag"),
+					CommandAction(func(*Context) error {
+						childCalled = true
+						return nil
+					}),
+				),
 				CommandAction(func(*Context) error {
 					parentCalled = true
 					return nil
