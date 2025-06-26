@@ -15,18 +15,18 @@ any directory structure. For an app named `my-app`:
 package main
 
 import (
-	"log"
-	"os"
+  "log"
+  "os"
 
-	"github.com/rliebz/clip"
+  "github.com/rliebz/clip"
 )
 
 func main() {
-	// Create a command-line application
-	app := clip.NewCommand("my-app")
+  // Create a command-line application
+  app := clip.NewCommand("my-app")
 
-	// Run it
-	os.Exit(app.Run())
+  // Run it
+  os.Exit(app.Run())
 }
 ```
 
@@ -47,9 +47,9 @@ a slightly longer description:
 
 ```go
 app := clip.NewCommand(
-	"my-app",
-	clip.CommandSummary("A command-line application"),
-	clip.CommandDescription(`This is a simple "Hello World" demo application.`),
+  "my-app",
+  clip.CommandSummary("A command-line application"),
+  clip.CommandDescription(`This is a simple "Hello World" demo application.`),
 )
 
 os.Exit(app.Run())
@@ -74,20 +74,20 @@ declare sub-commands before their parent commands:
 ```go
 // Define a sub-command "hello"
 hello := clip.NewCommand(
-	"hello",
-	clip.CommandSummary("Greet the world"),
-	clip.CommandAction(func(ctx *clip.Context) error {
-	  fmt.Println("Hello, world!")
-	  return nil
-	}),
+  "hello",
+  clip.CommandSummary("Greet the world"),
+  clip.CommandAction(func(ctx *clip.Context) error {
+    fmt.Println("Hello, world!")
+    return nil
+  }),
 )
 
 // Create the root command "my-app"
 app := clip.NewCommand(
-	"my-app",
-	clip.CommandSummary("A command-line application"),
-	clip.CommandDescription(`This is a simple "Hello World" demo application.`),
-	clip.SubCommand(hello),
+  "my-app",
+  clip.CommandSummary("A command-line application"),
+  clip.CommandDescription(`This is a simple "Hello World" demo application.`),
+  clip.SubCommand(hello),
 )
 
 // Run it
@@ -133,12 +133,12 @@ To make arguments available as a slice from an action's context, the function
 ```go
 var args []string
 hello := clip.NewCommand(
-	"hello",
-	clip.CommandArgs(&args),
-	clip.CommandAction(func (ctx *clip.Context) error {
-	  fmt.Println("Args: ", args)
-	  return nil
-	}),
+  "hello",
+  clip.CommandArgs(&args),
+  clip.CommandAction(func (ctx *clip.Context) error {
+    fmt.Println("Args: ", args)
+    return nil
+  }),
 )
 ```
 
@@ -148,20 +148,20 @@ the benefit of documentation, validation, and tab-completion.
 ```go
 name := "World"
 hello := clip.NewCommand(
-	"hello",
-	clip.CommandSummary("Greet the world"),
-	clip.StringArg(
+  "hello",
+  clip.CommandSummary("Greet the world"),
+  clip.StringArg(
     &name,
     "name",
     clip.ArgOptional,
     clip.ArgSummary("The person to greet"),
     clip.ArgValues([]string{"Alice", "Bruce", "Carl"}),
-	),
-	clip.CommandAction(func(ctx *clip.Context) error {
-		greeting := fmt.Sprintf("Hello, %s\n", name)
-		fmt.Println(greeting)
-		return nil
-	}),
+  ),
+  clip.CommandAction(func(ctx *clip.Context) error {
+    greeting := fmt.Sprintf("Hello, %s\n", name)
+    fmt.Println(greeting)
+    return nil
+  }),
 )
 ```
 
@@ -202,16 +202,16 @@ To create a flag that prints the version and exits, use an action flag:
 ```go
 version := "v0.1.0"
 app := clip.NewCommand(
-	"app",
-	clip.ToggleFlag(
-		"version",
-		clip.FlagShort("V"),
-		clip.FlagDescription("Print the version and exit"),
-		clip.FlagAction(func(ctx *clip.Context) error {
-			fmt.Println(version)
-			return nil
-		})
-	),
+  "app",
+  clip.ToggleFlag(
+    "version",
+    clip.FlagShort("V"),
+    clip.FlagDescription("Print the version and exit"),
+    clip.FlagAction(func(ctx *clip.Context) error {
+      fmt.Println(version)
+      return nil
+    })
+  ),
 )
 ```
 
@@ -221,28 +221,28 @@ Flags can be created with different types, such as bool and string:
 loud := false
 name := "world"
 hello := clip.NewCommand(
-	"hello",
-	clip.CommandSummary("Greet the world"),
-	clip.BoolFlag(
-		&loud,
-		"loud",
-		clip.FlagDescription("Whether to pump up the volume to max"),
-	),
-	clip.StringFlag(
-		&name,
-		"name",
-		clip.FlagShort("l"),
-		clip.FlagDescription("Who to greet"),
-	),
-	clip.CommandAction(func(ctx *clip.Context) error {
-		greeting := fmt.Sprintf("Hello, %s!", name)
-		if loud {
-			greeting = strings.ToUpper(greeting)
-		}
-		fmt.Println(greeting)
+  "hello",
+  clip.CommandSummary("Greet the world"),
+  clip.BoolFlag(
+    &loud,
+    "loud",
+    clip.FlagDescription("Whether to pump up the volume to max"),
+  ),
+  clip.StringFlag(
+    &name,
+    "name",
+    clip.FlagShort("l"),
+    clip.FlagDescription("Who to greet"),
+  ),
+  clip.CommandAction(func(ctx *clip.Context) error {
+    greeting := fmt.Sprintf("Hello, %s!", name)
+    if loud {
+      greeting = strings.ToUpper(greeting)
+    }
+    fmt.Println(greeting)
 
-		return nil
-	}),
+    return nil
+  }),
 )
 ```
 
