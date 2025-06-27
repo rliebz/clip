@@ -22,21 +22,28 @@ Commands:
 {{- if .VisibleFlags}}
 
 Options:
-{{- $lastIndex := sub (len .VisibleFlags) 1 }}
+{{- $lastIndex := -1 }}
+{{- range $i, $_ := .VisibleFlags }}
+{{- $lastIndex = $i }}
+{{- end }}
+
 {{- range $i, $flag := .VisibleFlags }}
 {{- with $flag }}
 {{ .Usage }}
 {{- if .Description }}
 {{ .Description | pad 10 }}
-{{- if or .Env .Deprecated }}{{ print "\n" }}{{ end }}
+{{- if or .Env .Default .Deprecated }}{{ print "\n" }}{{ end }}
 {{- end }}
 {{- if .Deprecated }}
 {{ pad 10 "" }}Deprecated: {{ .Deprecated }}
 {{- end }}
+{{- if .Default }}
+{{ pad 10 "" }}Default: {{ .Default }}
+{{- end }}
 {{- if .Env }}
 {{ pad 10 "" }}Env: {{ .Env | join ", " }}
 {{- end }}
-{{- if and (ne $i $lastIndex) (or .Description .Env .Deprecated) }}{{ print "\n" }}{{ end }}
+{{- if ne $i $lastIndex  }}{{ print "\n" }}{{ end }}
 {{- end }}
 {{- end }}
 

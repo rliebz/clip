@@ -9,16 +9,20 @@ import (
 //
 // Methods are defined for use in help text.
 type flagDef struct {
-	name        string
-	short       string
+	name  string
+	short string
+
+	action  func(*Context) error
+	boolVal string
+	env     []string
+
 	description string
 	deprecated  string
 	hidden      bool
-	action      func(*Context) error
-	env         []string
+	helpDefault string
+	hideDefault bool
 	placeholder string
 
-	boolVal string
 	setFunc func(string) error
 	changed bool
 }
@@ -50,8 +54,15 @@ func (f *flagDef) Description() string { return f.description }
 func (f *flagDef) Deprecated() string { return f.deprecated }
 
 // Env returns the list of environment variables.
-func (f *flagDef) Env() []string {
-	return f.env
+func (f *flagDef) Env() []string { return f.env }
+
+// Default returns the default value of a flag.
+func (f *flagDef) Default() string {
+	if f.hideDefault {
+		return ""
+	}
+
+	return f.helpDefault
 }
 
 // Hidden returns whether a flag should be hidden from help and tab completion.
@@ -92,6 +103,11 @@ func BoolFlag(value *bool, name string, options ...FlagOption) CommandOption {
 	return func(c *commandConfig) {
 		f := newFlag(name, options...)
 		f.boolVal = "true"
+		if *value {
+			f.placeholder = cmp.Or(f.placeholder, "<bool>")
+			f.helpDefault = cmp.Or(f.helpDefault, "true")
+		}
+
 		f.setFunc = func(s string) error {
 			switch s {
 			case "true", "1":
@@ -114,6 +130,10 @@ func StringFlag(value *string, name string, options ...FlagOption) CommandOption
 	return func(c *commandConfig) {
 		f := newFlag(name, options...)
 		f.placeholder = cmp.Or(f.placeholder, "<string>")
+		if *value != "" {
+			f.helpDefault = cmp.Or(f.helpDefault, *value)
+		}
+
 		f.setFunc = func(s string) error {
 			*value = s
 			return nil
@@ -141,13 +161,17 @@ func TextVarFlag(value TextVar, name string, options ...FlagOption) CommandOptio
 type FlagOption func(*flagConfig)
 
 type flagConfig struct {
-	short       string
+	short string
+
+	action func(*Context) error
+	env    []string
+
 	description string
 	deprecated  string
-	env         []string
-	placeholder string
 	hidden      bool
-	action      func(*Context) error
+	helpDefault string
+	hideDefault bool
+	placeholder string
 }
 
 func newFlag(name string, options ...FlagOption) *flagDef {
@@ -157,14 +181,18 @@ func newFlag(name string, options ...FlagOption) *flagDef {
 	}
 
 	return &flagDef{
-		name:        name,
-		short:       c.short,
+		name:  name,
+		short: c.short,
+
+		action: c.action,
+		env:    c.env,
+
 		description: c.description,
-		env:         c.env,
 		deprecated:  c.deprecated,
-		placeholder: c.placeholder,
 		hidden:      c.hidden,
-		action:      c.action,
+		helpDefault: c.helpDefault,
+		hideDefault: c.hideDefault,
+		placeholder: c.placeholder,
 	}
 }
 
@@ -203,6 +231,19 @@ func FlagDeprecated(derepcation string) FlagOption {
 func FlagEnv(env ...string) FlagOption {
 	return func(c *flagConfig) {
 		c.env = env
+	}
+}
+
+// FlagHelpDefault sets the default value of a flag in help docs.
+//
+// Help text will display non-zero values when possible. To disable, pass an
+// empty string to this function.
+func FlagHelpDefault(value string) FlagOption {
+	return func(c *flagConfig) {
+		c.helpDefault = value
+		if value == "" {
+			c.hideDefault = true
+		}
 	}
 }
 

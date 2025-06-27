@@ -16,7 +16,8 @@ func TestNewCommand_help(t *testing.T) {
 	g := ghost.New(t)
 
 	var loud bool
-	var name string
+	name := "world"
+	boolTrue := true
 
 	buf := new(bytes.Buffer)
 	hello := clip.NewCommand(
@@ -35,6 +36,20 @@ description of things to come and more!
 			clip.FlagDeprecated("Please don't be loud."),
 			clip.FlagEnv("HELLO_LOUD", "LOUD"),
 			clip.FlagShort("l"),
+		),
+		clip.BoolFlag(
+			&boolTrue,
+			"bool-a",
+		),
+		clip.BoolFlag(
+			&boolTrue,
+			"bool-b",
+			clip.FlagHelpDefault(""),
+		),
+		clip.BoolFlag(
+			&boolTrue,
+			"bool-c",
+			clip.FlagHelpDefault("some-default"),
 		),
 		clip.StringFlag(
 			&name,
@@ -64,6 +79,14 @@ This is a command that will say hello to
 a person, or to the world.
 
 Options:
+      --bool-a=<bool>
+          Default: true
+
+      --bool-b=<bool>
+
+      --bool-c=<bool>
+          Default: some-default
+
   -h, --help
           Print help and exit
 
@@ -78,6 +101,7 @@ Options:
       --name <string>
           Who to greet
 
+          Default: world
           Env: HELLO_NAME
 `,
 	))

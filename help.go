@@ -62,8 +62,6 @@ func (ctx *helpContext) VisibleFlags() []*flagDef {
 	return flags
 }
 
-// TODO: Default values
-//
 //go:embed help.tmpl
 var helpTemplate string
 
@@ -75,8 +73,6 @@ func WriteHelp(w io.Writer, ctx *Context) error {
 		"pad":            pad,
 		"padCommand":     getCommandPadder(hctx),
 		"printFlagShort": printFlagShort,
-		"add":            func(a, b int) int { return a + b },
-		"sub":            func(a, b int) int { return a - b },
 	})
 	t = template.Must(t.Parse(helpTemplate))
 	return t.Execute(w, hctx)
