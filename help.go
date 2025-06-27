@@ -35,10 +35,8 @@ type helpContext struct {
 func (ctx *helpContext) FullName() string {
 	name := ctx.command.Name()
 
-	cur := ctx.Parent()
-	for cur != nil {
+	for cur := ctx.Parent(); cur != nil; cur = cur.Parent() {
 		name = fmt.Sprintf("%s %s", cur.command.Name(), name)
-		cur = cur.Parent()
 	}
 
 	return name
